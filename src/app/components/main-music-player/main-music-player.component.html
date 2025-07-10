@@ -1,0 +1,35 @@
+<div class="flex w-full h-screen">
+  <!-- left section -->
+  <div class="w-[93%] bg-[#131c38]">
+    <!-- router tamplate would be here the reason its main screen all things going on  -->
+     <!-- <app-big-player></app-big-player> -->
+     <!-- <app-home></app-home> -->
+     <!-- This displays your routes -->
+
+    <router-outlet></router-outlet>
+</div>
+  <!-- right section -->
+  <div class="flex-1 flex flex-col items-center bg-white">
+    <!-- profile pick -->
+    <div class="mt-7 p-1 rounded-full bg-pink-400">
+        <img class="rounded-full w-[75px] h-[75px]" src="../../../assets/profilePick.webp" alt="">
+    </div>
+
+    <lucide-icon (click)="showControls()" *ngIf="!showControl" name="ChevronDown" class="cursor-pointer hover:drop-shadow-[0_0_6px_black] transition-all-400"></lucide-icon>
+
+    <lucide-icon (click)="showControls()" *ngIf="showControl" name="ChevronUp" class="cursor-pointer hover:drop-shadow-[0_0_6px_black] transition-all"></lucide-icon>
+        <!-- navigation icons -->
+        <div
+          class="mt-[80px] flex flex-col space-y-24 transition-all duration-500 ease-in-out"
+          [ngClass]="{
+              'opacity-100 translate-y-0' : !showControl,
+              'opacity-0 -translate-y-10' : showControl
+          }"
+        >
+        <lucide-icon name="Heart" class="cursor-pointer text-red-500 hover:drop-shadow-[0_0_6px_red] transition-all"></lucide-icon>
+        <lucide-icon name="ListMusic" class="cursor-pointer hover:drop-shadow-[0_0_6px_black] transition-all"></lucide-icon>
+        <lucide-icon name="House" class="cursor-pointer hover:drop-shadow-[0_0_6px_black] transition-all"></lucide-icon>
+        <lucide-icon name="UserRoundPen" class="cursor-pointer hover:drop-shadow-[0_0_6px_black] transition-all-400"></lucide-icon>
+    </div> 
+   </div>
+</div>
