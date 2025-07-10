@@ -25,7 +25,7 @@ export class MusicFetchApiService {
   }
 
   getSong(searchQuery:string):Observable <any>{
-    const url = `https://match-swim-requires-split.trycloudflare.com/api/download?search=${searchQuery}`;
+    const url = `http://localhost:3000/api/download?search=${searchQuery}`;
     return this.http.get<any>(url);
   }
 
