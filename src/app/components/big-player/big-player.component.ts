@@ -13,19 +13,24 @@ export class BigPlayerComponent implements OnInit{
   maxVolume:number = 100;
   currentTime:number = 0;
   url!:string;
+  seekValue: number = 0;
 
   songData:any;
   constructor(private songService:MusicFetchApiService){}
   ngOnInit():void{
     this.play();
-    this.duration = this.songService.getSongDuration();
-    this.currentTime = this.songService.getSongCurrentTime();
     this.songData = this.songService.getSongMetadata();
-    setInterval(()=>{
-      this.duration = this.songService.getSongDuration();
-      this.currentTime = this.songService.getSongCurrentTime();
-    },500)
-    
+
+    this.songService.audio.addEventListener('loadedmetadata', () => {
+      this.duration = this.songService.audio.duration;
+    });
+    this.songService.audio.addEventListener('timeupdate', () => {
+      this.currentTime = this.songService.audio.currentTime;
+      if (!this.isDragging) {
+        this.seekValue = this.currentTime;
+      }
+    });
+    // Removed setInterval polling
   }
   
   showControls():void{
@@ -90,10 +95,24 @@ export class BigPlayerComponent implements OnInit{
   //   this.isPlaying = false;
   // }
 
-seekTo(event: Event) {
-  const newTime = Number((event.target as HTMLInputElement).value);
-  this.songService.setSeekTime(newTime);
-}
+
+  // only register the change when dragging is stopped
+  isDragging: boolean = false;
+
+  onSeekInput(event: Event) {
+    this.isDragging = true;
+    this.seekValue = Number((event.target as HTMLInputElement).value);
+  }
+
+  onSeekChange(event: Event) {
+    this.isDragging = false;
+    const newTime = Number((event.target as HTMLInputElement).value);
+    this.seekTo(newTime);
+  }
+
+  seekTo(newTime: number) {
+    this.songService.setSeekTime(newTime);
+  }
 
 
   formatTime(timeInSeconds: number): string {
