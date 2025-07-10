@@ -12,20 +12,12 @@ export class MusicFetchApiService {
   thumbnail!:string;
 
   audio:HTMLAudioElement  = new Audio();
-  currentTime!:number;
-  duration!:number;
   constructor(private http:HttpClient) { 
-    this.audio.addEventListener('loadedmetadata',()=>{
-      this.duration = this.audio.duration;
-    })
-
-    this.audio.addEventListener('timeupdate',()=>{
-      this.currentTime = this.audio.currentTime;
-    })
+    // yaha nahi chahiye listners
   }
 
   getSong(searchQuery:string):Observable <any>{
-    const url = `https://match-swim-requires-split.trycloudflare.com/api/download?search=${searchQuery}`;
+    const url = `http://localhost:3000/api/download?search=${searchQuery}`;
     return this.http.get<any>(url);
   }
 
@@ -45,14 +37,6 @@ export class MusicFetchApiService {
     this.audio.pause();
   }
 
-  getSongDuration():number{
-    return this.duration;
-  }
-
-  getSongCurrentTime():number{
-    return this.currentTime;
-  }
-
 
   getSongMetadata(){
     const songData = {
@@ -66,6 +50,7 @@ export class MusicFetchApiService {
   setSeekTime(seekTime:number):number{
    return this.audio.currentTime = seekTime
   }
+  
   getSongUrl(){
     return this.songUrl;
   }

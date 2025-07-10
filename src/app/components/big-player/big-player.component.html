@@ -9,8 +9,9 @@
         type="range" 
         min="0"
         [max]="duration"   
-        [(ngModel)]="currentTime"  
-        (input)="seekTo($event)"
+        [(ngModel)]="seekValue"  
+        (input)="onSeekInput($event)"
+        (change)="onSeekChange($event)"
         class="w-full accent-pink-500  bg-gray-400 rounded-lg cursor-pointer"
         >
         <p class="text-white">{{ formatTime(currentTime) }}</p>
