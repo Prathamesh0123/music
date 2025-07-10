@@ -15,9 +15,11 @@ export class HomeComponent {
       this.musicApi.getSong(this.songName).subscribe({
         next:(response:any)=>{
           this.musicApi.songUrl = response.url;
-          this.musicApi.artistName = response.artist;
-          this.musicApi.songTitle = response.title;
-          this.musicApi.thumbnail = response.thumbnail;
+          this.musicApi.setSongData({
+              thumbnail:response.thumbnail,
+              artist:response.artist,
+              title:response.title
+            });
           this.router.navigate(['/musicPlayer']);
         },
         error:(err)=>{

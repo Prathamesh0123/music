@@ -18,13 +18,18 @@ export class BigPlayerComponent implements OnInit{
   constructor(private songService:MusicFetchApiService){}
   ngOnInit():void{
     this.play();
-    this.duration = this.songService.getSongDuration();
-    this.currentTime = this.songService.getSongCurrentTime();
-    this.songData = this.songService.getSongMetadata();
-    setInterval(()=>{
-      this.duration = this.songService.getSongDuration();
-      this.currentTime = this.songService.getSongCurrentTime();
-    },500)
+
+    this.songService.getSongMetadata().subscribe( songMetadata => {
+      this.songData = songMetadata;
+    });
+
+    this.songService.getSongCurrentTime().subscribe( time => {
+      this.currentTime = time;
+    });
+
+    this.songService.getSongDuration().subscribe( duration =>{
+      this.duration = duration;
+    });
     
   }
   
