@@ -1,6 +1,9 @@
     <!-- main container carring thumbnail and text controls  -->
     <div class= "bg-k-300 flex justify-center items-center p-3 h-full">
     <div class="flex flex-col justify-center items-center mt-8 gap-y-9">
+      <div class="fixed left-10 top-10">
+        <lucide-icon (click)="backPressed()" name="ChevronLeft" class="cursor-pointer text-white w-10 h-10"></lucide-icon>
+      </div>
       <img class="w-[67%] h-[440px] rounded-xl" [src]="songData.thumbnail" alt="thumbnail">
     <!-- //seek bar  -->
      <!-- <input type="file" (change)="loadLocalSong($event)"> -->

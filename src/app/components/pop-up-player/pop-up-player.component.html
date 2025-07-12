@@ -1,0 +1,30 @@
+<div *ngIf="showPlayer" class="fixed bottom-0 left-0 w-[93%] bg-gray-800/80 backdrop-blur-sm px-2 pt-2 pb-0 rounded-t-md">
+
+  <!-- 🎵 First Row: Image + Title + Button -->
+  <div class="grid grid-cols-12 items-center ">
+    <div class="col-span-2">
+      <img [src]="songData.thumbnail" alt="" class="w-[47%]">
+    </div>
+
+    <div class="col-span-10 flex items-center">
+      <h1 (click)="showBigPlayer()" class="text-white cursor-pointer">{{songData.title}} - Artist <span class="text-pink-500">{{songData.artist}}</span></h1>
+      <div class="ms-auto me-1">
+        <span>
+          <lucide-icon name="Play" (click)="play()" *ngIf="!isPlaying" class="text-white cursor-pointer h-7 w-7"></lucide-icon>
+          <lucide-icon name="Pause" (click)="pause()" *ngIf="isPlaying" class="text-white cursor-pointer h-7 w-7"></lucide-icon>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🎚️ Second Row: Range Input (full width) -->
+  <input
+   type="range" 
+   min="0"
+   [max]="duration"
+   [(ngModel)]="currentTime"
+   (input)="seekTo($event)"
+   class="w-full mt-2 h-1 accent-pink-500 rounded cursor-pointer"
+   >
+
+</div>

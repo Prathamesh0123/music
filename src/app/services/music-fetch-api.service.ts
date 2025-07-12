@@ -12,7 +12,7 @@ export class MusicFetchApiService {
   volumeSetBehaviorSub = new BehaviorSubject<number>(0);
 
   isPlayingBehaviourSub = new BehaviorSubject<boolean>(false);
-
+  isBackPrssed = new BehaviorSubject<boolean>(false);
   songmetaData = {
     thumbnail:'',
     title:'',
@@ -109,6 +109,10 @@ export class MusicFetchApiService {
   }
   getSongUrl(){
     return this.songUrl;
+  }
+
+  backPress(val:boolean){
+    this.isBackPrssed.next(val);
   }
 
 }

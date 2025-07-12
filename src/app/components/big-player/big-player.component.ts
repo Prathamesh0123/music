@@ -1,4 +1,5 @@
 import { Component,OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 @Component({
   selector: 'app-big-player',
@@ -16,11 +17,17 @@ export class BigPlayerComponent implements OnInit{
   currentTime:number = 0;
   url!:string;
 
+  loadPopUp:boolean = false;
   songData:any;
-  constructor(private songService:MusicFetchApiService){}
+  constructor(private songService:MusicFetchApiService,private router:Router){}
   ngOnInit():void{
-    // this.play();
+    this.songService.getSongMetadata().subscribe( songMetadata => {
+      this.songData = songMetadata;
+      // this.songService.playSong(this.songData.url);
+    });
+    this.play();
 
+    this.songService.backPress(false);
     this.songService.emitCurrentVolume();
     this.songService.isPlayingBehaviourSub.asObservable().subscribe(val =>{
       this.isPlaying = val;
@@ -28,10 +35,7 @@ export class BigPlayerComponent implements OnInit{
     this.songService.getVolume().subscribe(volume =>{
       this.currentVlolume = volume * 100;
     })
-    this.songService.getSongMetadata().subscribe( songMetadata => {
-      this.songData = songMetadata;
-      // this.songService.playSong(this.songData.url);
-    });
+
 
     this.songService.getSongCurrentTime().subscribe( time => {
       this.currentTime = time;
@@ -128,4 +132,9 @@ seekTo(event: Event) {
   return `${formattedMinutes}:${formattedSeconds}`;
 }
   
+backPressed(){
+  this.loadPopUp = true;
+  this.router.navigate(['/home']);
+  this.songService.backPress(this.loadPopUp);
+}
 }

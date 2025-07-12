@@ -1,12 +1,13 @@
 <div class="flex w-full h-screen">
   <!-- left section -->
-  <div class="w-[93%] bg-[#131c38]">
+  <div class="w-[93%] bg-[#131c38] relative min-h-screen">
     <!-- router tamplate would be here the reason its main screen all things going on  -->
      <!-- <app-big-player></app-big-player> -->
      <!-- <app-home></app-home> -->
      <!-- This displays your routes -->
-
     <router-outlet></router-outlet>
+    <app-pop-up-player></app-pop-up-player>
+
 </div>
   <!-- right section -->
   <div class="flex-1 flex flex-col items-center bg-white">
