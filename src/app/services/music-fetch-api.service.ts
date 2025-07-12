@@ -56,6 +56,7 @@ export class MusicFetchApiService {
     this.loadAuidoBehaviorSub.subscribe(val =>{
         this.isPlayingBehaviourSub.next(false);
         this.audio.src = val;
+        this.playSong();
     })
   }
 
