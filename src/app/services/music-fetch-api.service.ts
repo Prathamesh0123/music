@@ -9,11 +9,15 @@ export class MusicFetchApiService {
 
   durationBehaviourSub = new BehaviorSubject<number>(0);
   currentTimeBehaviorSub = new BehaviorSubject<number>(0);
+  volumeSetBehaviorSub = new BehaviorSubject<number>(0);
+
+  isPlayingBehaviourSub = new BehaviorSubject<boolean>(false);
 
   songmetaData = {
     thumbnail:'',
     title:'',
-    artist:''
+    artist:'',
+    url:'',
   }
 
   songMetaDataBehaviorSub = new BehaviorSubject<any>(0);
@@ -36,11 +40,14 @@ export class MusicFetchApiService {
       // this.currentTime = this.audio.currentTime;
       this.currentTimeBehaviorSub.next(this.audio.currentTime);
     })
-    this.songmetaData.thumbnail = this.thumbnail;
-    this.songmetaData.artist = this.artistName;
-    this.songmetaData.title = this.songTitle;
+    //takin initial volume from the component
+    this.volumeSetBehaviorSub.next(this.audio.volume);
 
-    this.songMetaDataBehaviorSub.next(this.songmetaData);
+    // this.songmetaData.thumbnail = this.thumbnail;
+    // this.songmetaData.artist = this.artistName;
+    // this.songmetaData.title = this.songTitle;
+
+    // this.songMetaDataBehaviorSub.next(this.songmetaData);
   }
 
   getSong(searchQuery:string):Observable <any>{
@@ -48,9 +55,9 @@ export class MusicFetchApiService {
     return this.http.get<any>(url);
   }
 
-  setSongData(meta:{title:string,thumbnail:string,artist:string}){
-    this.songmetaData = meta;
-    this.songMetaDataBehaviorSub.next(this.songmetaData);
+  setSongData(meta:{title:string,thumbnail:string,artist:string,url:string}){
+    // this.songmetaData = meta;
+    this.songMetaDataBehaviorSub.next(meta);
   }
 
   setSongUrl(url:string){
@@ -63,10 +70,12 @@ export class MusicFetchApiService {
       this.audio.load();
     }
     this.audio.play();
+    this.isPlayingBehaviourSub.next(true);
   }
 
   pauseSong(){
     this.audio.pause();
+    this.isPlayingBehaviourSub.next(false);
   }
 
   getSongDuration():Observable<number>{
@@ -80,6 +89,19 @@ export class MusicFetchApiService {
 
   getSongMetadata():Observable<any>{
     return this.songMetaDataBehaviorSub.asObservable(); 
+  }
+
+  setVolume(newVolume:number){
+    this.audio.volume = newVolume;
+    this.volumeSetBehaviorSub.next(this.audio.volume);
+  }
+  //on every route changes we update our behavour sub
+  emitCurrentVolume() {
+    this.volumeSetBehaviorSub.next(this.audio.volume);
+  }
+  //emit back chnaged audio
+  getVolume():Observable<number>{
+    return this.volumeSetBehaviorSub.asObservable();
   }
 
   setSeekTime(seekTime:number):number{

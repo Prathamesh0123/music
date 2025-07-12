@@ -18,7 +18,8 @@ export class HomeComponent {
           this.musicApi.setSongData({
               thumbnail:response.thumbnail,
               artist:response.artist,
-              title:response.title
+              title:response.title,
+              url:response.url
             });
           this.router.navigate(['/musicPlayer']);
         },

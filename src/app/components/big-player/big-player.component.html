@@ -42,8 +42,9 @@
                   <input 
                   type="range"
                   min="0"
-                  [max]="maxVolume"
+                  max="100"
                   [value]="currentVlolume"
+                  (input)="volumeControl($event)"
                   class="w-[70%] accent-pink-500  bg-gray-400 rounded-lg cursor-pointer"
                   >
               </div>

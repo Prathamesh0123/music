@@ -7,7 +7,9 @@ import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 })
 export class BigPlayerComponent implements OnInit{
   showControl:boolean = false;
+
   isPlaying:boolean = false;
+
   currentVlolume:number = 0;
   duration:number = 0;
   maxVolume:number = 100;
@@ -17,10 +19,18 @@ export class BigPlayerComponent implements OnInit{
   songData:any;
   constructor(private songService:MusicFetchApiService){}
   ngOnInit():void{
-    this.play();
+    // this.play();
 
+    this.songService.emitCurrentVolume();
+    this.songService.isPlayingBehaviourSub.asObservable().subscribe(val =>{
+      this.isPlaying = val;
+    })
+    this.songService.getVolume().subscribe(volume =>{
+      this.currentVlolume = volume * 100;
+    })
     this.songService.getSongMetadata().subscribe( songMetadata => {
       this.songData = songMetadata;
+      // this.songService.playSong(this.songData.url);
     });
 
     this.songService.getSongCurrentTime().subscribe( time => {
@@ -39,15 +49,22 @@ export class BigPlayerComponent implements OnInit{
   }
 
   play():void{
-    this.songService.playSong(this.songService.getSongUrl());
-    this.isPlaying = true;
+    this.songService.playSong(this.songData.url);
   }
 
   pause(){
     this.songService.pauseSong();
-    this.isPlaying = false;
+    // this.isPlaying = false;
   }
 
+  volumeControl(event:Event){
+    const newVolume = Number((event.target as HTMLInputElement).value);
+    
+    this.currentVlolume = newVolume;                    // ✅ update variable
+    const normalizedVolume = newVolume / 100;          // convert 0–100 to 0.0–1.0
+
+    this.songService.setVolume(normalizedVolume);
+  }
   // audioSetUp(){
   //   this.songService.audio.addEventListener('loadedmetadata',()=>{
   //     this.duration = this.songService.getSongDuration();
@@ -71,7 +88,6 @@ export class BigPlayerComponent implements OnInit{
 
     // if(file){
     //    this.url = URL.createObjectURL(file);
-    // }else{
     //   console.log('No file selected!!!');
     // }
     // this.audio.src = this.url;
