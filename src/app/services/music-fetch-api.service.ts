@@ -13,6 +13,8 @@ export class MusicFetchApiService {
 
   isPlayingBehaviourSub = new BehaviorSubject<boolean>(false);
   isBackPrssed = new BehaviorSubject<boolean>(false);
+
+  loadAuidoBehaviorSub = new BehaviorSubject<string>('');
   songmetaData = {
     thumbnail:'',
     title:'',
@@ -34,12 +36,15 @@ export class MusicFetchApiService {
     this.audio.addEventListener('loadedmetadata',()=>{
       // this.duration = this.audio.duration;
       this.durationBehaviourSub.next(this.audio.duration);
+
     })
 
     this.audio.addEventListener('timeupdate',()=>{
       // this.currentTime = this.audio.currentTime;
       this.currentTimeBehaviorSub.next(this.audio.currentTime);
     })
+
+    
     //takin initial volume from the component
     this.volumeSetBehaviorSub.next(this.audio.volume);
 
@@ -48,6 +53,10 @@ export class MusicFetchApiService {
     // this.songmetaData.title = this.songTitle;
 
     // this.songMetaDataBehaviorSub.next(this.songmetaData);
+    this.loadAuidoBehaviorSub.subscribe(val =>{
+        this.isPlayingBehaviourSub.next(false);
+        this.audio.src = val;
+    })
   }
 
   getSong(searchQuery:string):Observable <any>{
@@ -57,6 +66,7 @@ export class MusicFetchApiService {
 
   setSongData(meta:{title:string,thumbnail:string,artist:string,url:string}){
     // this.songmetaData = meta;
+    this.loadAuidoBehaviorSub.next(meta.url);
     this.songMetaDataBehaviorSub.next(meta);
   }
 
@@ -64,11 +74,11 @@ export class MusicFetchApiService {
     this.songUrl = url;
   }
 
-  playSong(url: string) {
-    if (this.audio.src !== url) {
-      this.audio.src = url;
-      this.audio.load();
-    }
+  playSong() {
+    // if (this.audio.src !== url) {
+    //   this.audio.src = url;
+    //   this.audio.load();
+    // }
     this.audio.play();
     this.isPlayingBehaviourSub.next(true);
   }

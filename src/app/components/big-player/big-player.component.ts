@@ -25,8 +25,7 @@ export class BigPlayerComponent implements OnInit{
       this.songData = songMetadata;
       // this.songService.playSong(this.songData.url);
     });
-    this.play();
-
+ 
     this.songService.backPress(false);
     this.songService.emitCurrentVolume();
     this.songService.isPlayingBehaviourSub.asObservable().subscribe(val =>{
@@ -53,7 +52,7 @@ export class BigPlayerComponent implements OnInit{
   }
 
   play():void{
-    this.songService.playSong(this.songData.url);
+    this.songService.playSong();
   }
 
   pause(){

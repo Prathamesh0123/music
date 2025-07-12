@@ -33,7 +33,7 @@ export class PopUpPlayerComponent {
       this.songService.getSongDuration().subscribe(val =>{
         this.duration = val;
       })
-      
+
       this.songService.isPlayingBehaviourSub.asObservable().subscribe(val =>{
         this.isPlaying = val;
       })
@@ -53,7 +53,7 @@ export class PopUpPlayerComponent {
   }
 
   play(){
-    this.songService.playSong(this.songData.url);
+    this.songService.playSong();
   }
 
   pause(){
