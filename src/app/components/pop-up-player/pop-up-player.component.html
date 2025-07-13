@@ -3,11 +3,11 @@
   <!-- 🎵 First Row: Image + Title + Button -->
   <div class="grid grid-cols-12 items-center ">
     <div class="col-span-2">
-      <img [src]="songData.thumbnail" alt="" class="w-[47%]">
+      <img [src]="songData[currentIndex].thumbnail" alt="" class="w-[47%]">
     </div>
 
     <div class="col-span-10 flex items-center">
-      <h1 (click)="showBigPlayer()" class="text-white cursor-pointer">{{songData.title}} - Artist <span class="text-pink-500">{{songData.artist}}</span></h1>
+      <h1 (click)="showBigPlayer()" class="text-white cursor-pointer">{{songData[currentIndex].title}} - Artist <span class="text-pink-500">{{songData[currentIndex].artist}}</span></h1>
       <div class="ms-auto me-1">
         <span>
           <lucide-icon name="Play" (click)="play()" *ngIf="!isPlaying" class="text-white cursor-pointer h-7 w-7"></lucide-icon>

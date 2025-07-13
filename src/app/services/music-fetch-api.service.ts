@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { filter, Observable } from 'rxjs';
 import { BehaviorSubject } from 'rxjs';
+import { MusicData } from '../models/music-data';
 @Injectable({
   providedIn: 'root'
 })
@@ -15,6 +16,9 @@ export class MusicFetchApiService {
   isBackPrssed = new BehaviorSubject<boolean>(false);
 
   loadAuidoBehaviorSub = new BehaviorSubject<string>('');
+
+  currentIndexBehaviorSub = new BehaviorSubject<number>(0);
+
   songmetaData = {
     thumbnail:'',
     title:'',
@@ -22,6 +26,8 @@ export class MusicFetchApiService {
     url:'',
   }
 
+  musicData :MusicData[] = [];
+  
   songMetaDataBehaviorSub = new BehaviorSubject<any>(0);
 
   songUrl!:string;
@@ -48,16 +54,37 @@ export class MusicFetchApiService {
     //takin initial volume from the component
     this.volumeSetBehaviorSub.next(this.audio.volume);
 
-    // this.songmetaData.thumbnail = this.thumbnail;
-    // this.songmetaData.artist = this.artistName;
-    // this.songmetaData.title = this.songTitle;
 
     // this.songMetaDataBehaviorSub.next(this.songmetaData);
-    this.loadAuidoBehaviorSub.subscribe(val =>{
-        this.isPlayingBehaviourSub.next(false);
-        this.audio.src = val;
-        this.playSong();
-    })
+    // this.loadAuidoBehaviorSub.subscribe(val =>{
+    //     this.isPlayingBehaviourSub.next(false);
+    //     //mybe i add method here that decide which song to load from the array 
+    //     this.audio.src = val;
+    //     this.playSong();
+    // })
+    //inital hiting play when song come's in queue
+
+      this.currentIndexBehaviorSub
+        .pipe(
+          filter(index => !!this.musicData[index])
+        )
+        .subscribe(index => {
+          const song = this.musicData[index];
+          this.audio.src = song.url;
+          this.audio.load();
+          this.audio.play();
+          this.isPlayingBehaviourSub.next(true);
+        });
+
+  }
+
+  playSongFromQueue(index:number){
+    const selectedSong = this.musicData[index];
+    this.audio.src = selectedSong.url;
+    this.audio.load();
+    this.audio.play();
+    this.isPlayingBehaviourSub.next(true);
+    this.currentIndexBehaviorSub.next(index);
   }
 
   getSong(searchQuery:string):Observable <any>{
@@ -67,8 +94,10 @@ export class MusicFetchApiService {
 
   setSongData(meta:{title:string,thumbnail:string,artist:string,url:string}){
     // this.songmetaData = meta;
-    this.loadAuidoBehaviorSub.next(meta.url);
-    this.songMetaDataBehaviorSub.next(meta);
+    this.musicData.push(meta);
+    if(this.musicData.length == 1){
+      this.currentIndexBehaviorSub.next(0);
+    }
   }
 
   setSongUrl(url:string){
@@ -124,6 +153,11 @@ export class MusicFetchApiService {
 
   backPress(val:boolean){
     this.isBackPrssed.next(val);
+  }
+
+
+  getSongArray(){
+    return this.musicData;
   }
 
 }

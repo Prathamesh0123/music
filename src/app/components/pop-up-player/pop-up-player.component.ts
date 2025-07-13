@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { MusicData } from 'src/app/models/music-data';
 import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 
 @Component({
@@ -10,20 +11,18 @@ import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 export class PopUpPlayerComponent {
   showPlayer:boolean = true;
   isPlaying:boolean = false;
-  songData = {
-    thumbnail:'',
-    title:'',
-    artist:'',
-    url:''
-  }
+
   currentTime:number = 0;
   duration:number = 0;
+  songData : MusicData[] =  [];
+  currentIndex!:number;
   constructor(private router:Router,private songService:MusicFetchApiService){}
 
-
+  
   ngOnInit(): void {
-      this.songService.getSongMetadata().subscribe(val =>{
-        this.songData = val;
+      this.songData = this.songService.getSongArray();
+      this.songService.currentIndexBehaviorSub.asObservable().subscribe(val =>{
+        this.currentIndex = val;
       })
 
       this.songService.getSongCurrentTime().subscribe(val =>{

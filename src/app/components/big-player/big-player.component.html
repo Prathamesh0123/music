@@ -4,7 +4,7 @@
       <div class="fixed left-10 top-10">
         <lucide-icon (click)="backPressed()" name="ChevronLeft" class="cursor-pointer text-white w-10 h-10"></lucide-icon>
       </div>
-      <img class="w-[67%] h-[440px] rounded-xl" [src]="songData.thumbnail" alt="thumbnail">
+      <img class="w-[67%] h-[440px] rounded-xl" [src]="songArray[currentSongIndex].thumbnail" alt="thumbnail">
     <!-- //seek bar  -->
      <!-- <input type="file" (change)="loadLocalSong($event)"> -->
     <div class="flex space-x-1 w-[80%] mt-8 px-2">
@@ -21,23 +21,48 @@
 
       </div>
     </div>
-    <!-- the text container handling the controls and seek bar -->
-    <div class="flex-1 flex flex-col space-y-44 mt-2 items-center">
+    <!-- the text container handling the controls and volume bar -->
+    <div class="flex-1 flex flex-col space-y-20 mt-2 items-center">
       <div class="text-center space-y-1">
-        <h1 class="text-5xl text-yellow-50">{{songData.title | uppercase }}</h1>
-        <h2 class="text-pink-500">Artist-{{songData.artist}}</h2>
+        <h1 class="text-5xl text-yellow-50">{{songArray[currentSongIndex].title | uppercase }}</h1>
+        <h2 class="text-pink-500">Artist-{{songArray[currentSongIndex].artist}}</h2>
+
       </div>
+              <!-- quueu section  -->
+      <div class="grid grid-cols-1 bg-slate-800 text-white overflow-y-auto scrollbar-hidden h-[145px] w-full rounded-md">
+        <!-- Queue heading -->
+        <h1 class="bg-pink-600 font-semibold ps-3 text-white p-1">Songs in Queue</h1>
+
+        <!-- Song list -->
+        <div
+          *ngFor="let song of songArray; let i = index"
+          (click)="playFromQue(i)"
+          class="grid grid-cols-12 items-center p-2 border-b cursor-pointer"
+          [ngClass]="{
+            'bg-slate-700': i === currentSongIndex,
+            'hover:bg-slate-700/80': true
+          }"
+        >
+          <div class="col-span-2">
+            <img [src]="song.thumbnail" class="rounded-md w-full" alt="">
+          </div>
+          <div class="col-span-10">
+            <h1 class="truncate">{{ song.title }} - <span class="text-pink-500">{{ song.artist }}</span></h1>
+          </div>
+        </div>
+      </div>
+
       <div class="flex flex-col justify-center items-center p-2  text-white">
         <!-- prev control  -->
          <div class="flex justify-center items-center space-x-4 mb-2">
-        <lucide-icon name="StepBack" class="w-8 h-8 cursor-pointer"></lucide-icon>
+        <lucide-icon name="StepBack" (click)="prev()" class="w-8 h-8 cursor-pointer"></lucide-icon>
         <!-- play / pause  -->
         <div  class="bg-pink-500 rounded-full p-2">
           <lucide-icon *ngIf="!isPlaying" (click)="play()" name="Play" class="w-8 h-8 cursor-pointer hover:drop-shadow-[0_0_6px_pink]"></lucide-icon>
           <lucide-icon  *ngIf="isPlaying" (click)="pause()" name="Pause" class="w-8 h-8 cursor-pointer hover:drop-shadow-[0_0_6px_pink]"></lucide-icon>
         </div>
         <!-- forword control  -->
-        <lucide-icon name="StepForward" class="w-8 h-8 cursor-pointer"></lucide-icon>
+        <lucide-icon name="StepForward" (click)="next()" class="w-8 h-8 cursor-pointer"></lucide-icon>
       </div>    
               <div class="flex cursor-pointer space-x-1">
                   <lucide-icon *ngIf="currentVlolume > 0" name="Volume1"></lucide-icon>

@@ -1,5 +1,6 @@
 import { Component,OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { MusicData } from 'src/app/models/music-data';
 import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 @Component({
   selector: 'app-big-player',
@@ -19,8 +20,16 @@ export class BigPlayerComponent implements OnInit{
 
   loadPopUp:boolean = false;
   songData:any;
+  currentSongIndex!:number;
+  songArray:MusicData [] = [];
   constructor(private songService:MusicFetchApiService,private router:Router){}
   ngOnInit():void{
+
+    this.songService.currentIndexBehaviorSub.asObservable().subscribe(val =>{
+      this.currentSongIndex = val;
+    })
+
+    this.songArray = this.songService.getSongArray();
     this.songService.getSongMetadata().subscribe( songMetadata => {
       this.songData = songMetadata;
       // this.songService.playSong(this.songData.url);
@@ -29,12 +38,11 @@ export class BigPlayerComponent implements OnInit{
     this.songService.backPress(false);
     this.songService.emitCurrentVolume();
     this.songService.isPlayingBehaviourSub.asObservable().subscribe(val =>{
-      this.isPlaying = val;
+    this.isPlaying = val;
     })
     this.songService.getVolume().subscribe(volume =>{
       this.currentVlolume = volume * 100;
     })
-
 
     this.songService.getSongCurrentTime().subscribe( time => {
       this.currentTime = time;
@@ -55,10 +63,30 @@ export class BigPlayerComponent implements OnInit{
     this.songService.playSong();
   }
 
+  playFromQue(index:number){
+    this.songService.playSongFromQueue(index);
+  }
   pause(){
     this.songService.pauseSong();
     // this.isPlaying = false;
   }
+
+  next() {
+    if (this.currentSongIndex + 1 < this.songArray.length) {
+      this.songService.playSongFromQueue(this.currentSongIndex + 1);
+    } else {
+      this.songService.playSongFromQueue(0); // loop back
+    }
+  }
+
+  prev() {
+    if (this.currentSongIndex > 0) {
+      this.songService.playSongFromQueue(this.currentSongIndex - 1);
+    } else {
+      this.songService.playSongFromQueue(this.songArray.length - 1); // go to last
+    }
+  }
+
 
   volumeControl(event:Event){
     const newVolume = Number((event.target as HTMLInputElement).value);
@@ -68,51 +96,7 @@ export class BigPlayerComponent implements OnInit{
 
     this.songService.setVolume(normalizedVolume);
   }
-  // audioSetUp(){
-  //   this.songService.audio.addEventListener('loadedmetadata',()=>{
-  //     this.duration = this.songService.getSongDuration();
-  //   })
-  //   this.songService.audio.addEventListener('timeupdate',()=>{
-  //     this.currentTime = this.songService.getSongCurrentTime();
-  //   })
-  // }
 
-  // playPause(){
-  //   if(this.isPlaying){
-  //     this.audio.pause();
-  //   }else{
-  //     this.audio.play();
-  //   }
-  //   this.isPlaying = !this.isPlaying;
-  // }
-
-  loadLocalSong(event:Event){
-    // const file = (event.target as HTMLInputElement).files?.[0];
-
-    // if(file){
-    //    this.url = URL.createObjectURL(file);
-    //   console.log('No file selected!!!');
-    // }
-    // this.audio.src = this.url;
-    // this.audio.load();
-    
-    // this.audio.addEventListener('loadedmetadata',()=>{
-    //   this.duration = this.audio.duration;
-    //   // console.log(this.duration);
-    // })
-
-    // this.audio.addEventListener('timeupdate',()=>{
-    //   this.currentTime = this.audio.currentTime;      
-    // })
-    
-    // this.audio.play();
-    // this.isPlaying = true;
-
-  }
-
-  // pause():void{
-  //   this.isPlaying = false;
-  // }
 
 seekTo(event: Event) {
   const newTime = Number((event.target as HTMLInputElement).value);
