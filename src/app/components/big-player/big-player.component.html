@@ -1,81 +1,93 @@
-    <!-- main container carring thumbnail and text controls  -->
-    <div class= "bg-k-300 flex justify-center items-center p-3 h-full">
-    <div class="flex flex-col justify-center items-center mt-8 gap-y-9">
-      <div class="fixed left-10 top-10">
-        <lucide-icon (click)="backPressed()" name="ChevronLeft" class="cursor-pointer text-white w-10 h-10"></lucide-icon>
+<!-- Main Container -->
+<div class="flex flex-col sm:flex-row h-screen w-full p-3 overflow-y-hidden relative">
+
+  <!-- Thumbnail Section -->
+  <div class="flex flex-col justify-center items-center gap-y-6 sm:space-x-10 sm:gap-y-1 pt-24 sm:pt-0 flex-shrink-0">
+    <!-- Back Button -->
+    <div class="fixed left-4 top-4 sm:left-10 sm:top-10 z-10">
+      <lucide-icon (click)="backPressed()" name="ChevronLeft" class="cursor-pointer text-white w-8 h-8 sm:w-10 sm:h-10"></lucide-icon>
+    </div>
+
+    <!-- Responsive Thumbnail Image -->
+    <img
+      class="w-[85vw] sm:w-[80vw] md:w-[40vw] lg:w-[35vw] max-w-[550px] aspect-[4/3] rounded-xl object-cover"
+      [src]="songArray[currentSongIndex].thumbnail"
+      alt="thumbnail"
+    >
+  </div>
+
+  <!-- Right Content: Title, Queue, Controls -->
+  <div class="flex-1 flex flex-col sm:justify-normal items-center gap-y-16 sm:gap-y-0 sm:space-y-8  mt-4 sm:mt-20">
+
+    <!-- Song Title -->
+    <div class="text-center space-y-1">
+      <h1 class="text-4xl sm:text-5xl text-yellow-50">{{ songArray[currentSongIndex].title | uppercase }}</h1>
+      <h2 class="text-pink-500">Artist -  {{ songArray[currentSongIndex].artist }}</h2>
+    </div>
+
+    <!-- Queue -->
+    <div class="grid grid-cols-1 bg-slate-800 text-white overflow-y-auto scrollbar-hidden h-[145px] w-[90%] sm:w-[70%] rounded-md">
+      <h1 class="bg-pink-600 font-semibold ps-3 text-white p-1">Songs in Queue</h1>
+
+      <div
+        *ngFor="let song of songArray; let i = index"
+        (click)="playFromQue(i)"
+        class="grid grid-cols-12 items-center space-x-2 p-2 border-b cursor-pointer"
+        [ngClass]="{
+          'bg-slate-700': i === currentSongIndex,
+          'hover:bg-slate-700/80': true
+        }"
+      >
+        <div class="col-span-2">
+          <img [src]="song.thumbnail" class="rounded-md w-full" alt="">
+        </div>
+        <div class="col-span-10">
+          <h1 class="truncate">{{ song.title }} - <span class="text-pink-500">{{ song.artist }}</span></h1>
+        </div>
       </div>
-      <img class="w-[67%] h-[440px] rounded-xl" [src]="songArray[currentSongIndex].thumbnail" alt="thumbnail">
-    <!-- //seek bar  -->
-     <!-- <input type="file" (change)="loadLocalSong($event)"> -->
-    <div class="flex space-x-1 w-[80%] mt-8 px-2">
+    </div>
+
+    <!-- Play Controls + Volume -->
+    <div class="flex flex-col justify-center items-center text-white w-full">
+      <!-- Controls -->
+      <div class="flex justify-center items-center space-x-4 mb-4">
+        <lucide-icon name="StepBack" (click)="prev()" class="w-8 h-8 cursor-pointer"></lucide-icon>
+
+        <div class="bg-pink-500 rounded-full p-2">
+          <lucide-icon *ngIf="!isPlaying" (click)="play()" name="Play" class="w-8 h-8 cursor-pointer hover:drop-shadow-[0_0_6px_pink]"></lucide-icon>
+          <lucide-icon *ngIf="isPlaying" (click)="pause()" name="Pause" class="w-8 h-8 cursor-pointer hover:drop-shadow-[0_0_6px_pink]"></lucide-icon>
+        </div>
+
+        <lucide-icon name="StepForward" (click)="next()" class="w-8 h-8 cursor-pointer"></lucide-icon>
+      </div>
+
+      <!-- Volume Control -->
+      <div class="flex items-center space-x-2 w-[80%] sm:w-[60%] md:w-[40%]">
+        <lucide-icon *ngIf="currentVlolume > 0" name="Volume1"></lucide-icon>
+        <lucide-icon *ngIf="currentVlolume == 0" name="VolumeX"></lucide-icon>
         <input 
+          type="range"
+          min="0"
+          max="100"
+          [value]="currentVlolume"
+          (input)="volumeControl($event)"
+          class="w-full accent-pink-500 bg-gray-400 rounded-lg cursor-pointer"
+        >
+      </div>
+    </div>
+
+    <!-- Seek Bar: Only pinned to bottom on desktop -->
+    <div class="w-full px-4 sm:absolute sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2">
+      <p class="text-white text-right text-sm">{{ formatTime(currentTime) }}</p>
+      <input 
         type="range" 
         min="0"
         [max]="duration"   
         [(ngModel)]="currentTime"  
         (input)="seekTo($event)"
-        class="w-full accent-pink-500  bg-gray-400 rounded-lg cursor-pointer"
-        >
-        <p class="text-white">{{ formatTime(currentTime) }}</p>
-        <!-- <p >00:00</p> -->
-
-      </div>
+        class="w-full accent-pink-500 bg-gray-400 rounded-lg cursor-pointer"
+      >
     </div>
-    <!-- the text container handling the controls and volume bar -->
-    <div class="flex-1 flex flex-col space-y-20 mt-2 items-center">
-      <div class="text-center space-y-1">
-        <h1 class="text-5xl text-yellow-50">{{songArray[currentSongIndex].title | uppercase }}</h1>
-        <h2 class="text-pink-500">Artist-{{songArray[currentSongIndex].artist}}</h2>
 
-      </div>
-              <!-- quueu section  -->
-      <div class="grid grid-cols-1 bg-slate-800 text-white overflow-y-auto scrollbar-hidden h-[145px] w-full rounded-md">
-        <!-- Queue heading -->
-        <h1 class="bg-pink-600 font-semibold ps-3 text-white p-1">Songs in Queue</h1>
-
-        <!-- Song list -->
-        <div
-          *ngFor="let song of songArray; let i = index"
-          (click)="playFromQue(i)"
-          class="grid grid-cols-12 items-center p-2 border-b cursor-pointer"
-          [ngClass]="{
-            'bg-slate-700': i === currentSongIndex,
-            'hover:bg-slate-700/80': true
-          }"
-        >
-          <div class="col-span-2">
-            <img [src]="song.thumbnail" class="rounded-md w-full" alt="">
-          </div>
-          <div class="col-span-10">
-            <h1 class="truncate">{{ song.title }} - <span class="text-pink-500">{{ song.artist }}</span></h1>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex flex-col justify-center items-center p-2  text-white">
-        <!-- prev control  -->
-         <div class="flex justify-center items-center space-x-4 mb-2">
-        <lucide-icon name="StepBack" (click)="prev()" class="w-8 h-8 cursor-pointer"></lucide-icon>
-        <!-- play / pause  -->
-        <div  class="bg-pink-500 rounded-full p-2">
-          <lucide-icon *ngIf="!isPlaying" (click)="play()" name="Play" class="w-8 h-8 cursor-pointer hover:drop-shadow-[0_0_6px_pink]"></lucide-icon>
-          <lucide-icon  *ngIf="isPlaying" (click)="pause()" name="Pause" class="w-8 h-8 cursor-pointer hover:drop-shadow-[0_0_6px_pink]"></lucide-icon>
-        </div>
-        <!-- forword control  -->
-        <lucide-icon name="StepForward" (click)="next()" class="w-8 h-8 cursor-pointer"></lucide-icon>
-      </div>    
-              <div class="flex cursor-pointer space-x-1">
-                  <lucide-icon *ngIf="currentVlolume > 0" name="Volume1"></lucide-icon>
-                  <lucide-icon *ngIf="currentVlolume == 0" name="VolumeX"></lucide-icon>
-                  <input 
-                  type="range"
-                  min="0"
-                  max="100"
-                  [value]="currentVlolume"
-                  (input)="volumeControl($event)"
-                  class="w-[70%] accent-pink-500  bg-gray-400 rounded-lg cursor-pointer"
-                  >
-              </div>
-      </div>
-    </div>
   </div>
+</div>

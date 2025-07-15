@@ -20,22 +20,36 @@ app.get('/api/download',async(req,res)=>{
     const rawTitle = videoInfo.entries[0].title;
 
     // Try to split by '-'
-    let [artistPart, songPart] = rawTitle.split(' - ');
+  let raw = rawTitle.toLowerCase();
 
-    if (!songPart) {
-        // If no hyphen, fallback to the part before first '|'
-        [songPart] = rawTitle.split('|');
-        artistPart = 'Unknown'; // or leave empty
+    // Remove common clutter
+    raw = raw.replace(/\[.*?\]|\(.*?\)|official|video|lyrics|audio|hd|4k|full|feat\.?|ft\.?/gi, '')
+            .replace(/[^a-zA-Z0-9\s\-]/g, '') // remove special characters
+            .replace(/\s+/g, ' ')             // collapse multiple spaces
+            .trim();
+
+    let artistPart = 'Unknown';
+    let songPart = raw;
+
+    // Try to split artist and title
+    // Try to split artist and title
+    if (raw.includes(' - ')) {
+        [songPart, artistPart] = raw.split(' - ', 2);
+    } else if (raw.includes('-')) {
+        [songPart, artistPart] = raw.split('-', 2);
     }
 
-    // Further clean the song title (remove "Full VIDEO song" etc.)
-    songPart = songPart.replace(/Full.*$/i, '').trim();
+
+    // Trim and limit length
+    artistPart = artistPart.trim().slice(0, 30);  // Max 30 characters
+    songPart = songPart.trim().slice(0, 40);      // Max 40 characters
+
 
     const songData = {
         artist: artistPart.trim(),
         thumbnail: videoInfo.entries[0].thumbnail,
         title: songPart,
-        url: `http://localhost:3000/songs/${fileName}`
+        url: `https://scroll-governor-wifi-this.trycloudflare.com/songs/${fileName}`
     };
 
     console.log(songData);

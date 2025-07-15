@@ -88,7 +88,7 @@ export class MusicFetchApiService {
   }
 
   getSong(searchQuery:string):Observable <any>{
-    const url = `http://localhost:3000/api/download?search=${searchQuery}`;
+    const url = `https://scroll-governor-wifi-this.trycloudflare.com/api/download?search=${searchQuery}`;
     return this.http.get<any>(url);
   }
 

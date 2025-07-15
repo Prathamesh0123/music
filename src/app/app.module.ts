@@ -4,7 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MainMusicPlayerComponent } from './components/main-music-player/main-music-player.component';
-import { ArrowDownToLine, ChevronDown, ChevronUp ,ChevronLeft, Heart, ListMusic, LucideAngularModule, UserRoundPen ,LogOut, Play, StepForward, StepBack, Pause, Volume1, VolumeX, House} from 'lucide-angular';
+import { ArrowDownToLine, ChevronDown, ChevronUp ,ChevronLeft, Heart, ListMusic, LucideAngularModule, UserRoundPen ,LogOut, Play, StepForward, StepBack, Pause, Volume1, VolumeX, House, Menu, Search} from 'lucide-angular';
 import { BigPlayerComponent } from './components/big-player/big-player.component';
 import {HttpClientModule} from '@angular/common/http';
 import { HomeComponent } from './components/home/home.component';
@@ -37,6 +37,8 @@ import { PopUpPlayerComponent } from './components/pop-up-player/pop-up-player.c
       VolumeX,
       House,
       ChevronLeft,
+      Menu,
+      Search,
     }),
     HttpClientModule,
     FormsModule,

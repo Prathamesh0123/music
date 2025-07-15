@@ -1,14 +1,24 @@
-<div class="grid sm:grid-cols-1 gap-y-36 p-4">
-    <div class="grid sm:grid-cols-1 gap-y-3 mt-10">
-        <input type="text" [(ngModel)]="songName" class="rounded-lg text-2xl p-2 ms-[210px] w-[70%]" placeholder="Enter song name....">    
-        <button class="text-2xl rounded-lg bg-black text-white px-12 py-2 justify-self-center" (click)="fetchSong()">search</button>
-    </div>
-    <div class="p-4 text-center font-semibold">
-        <h1 class="text-7xl  text-white">
-           "Search It. Play It. <span class="text-red-500">Love It"</span>
-        </h1>
-        
+<div class="grid gap-y-36 p-4">
+  <!-- Search input + button wrapper -->
+  <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 w-full">
+    <input
+      type="text"
+      [(ngModel)]="songName"
+      class="rounded-lg text-xl p-3 w-full sm:w-[60%] max-w-xl"
+      placeholder="Enter song name..."
+    />
+    <button
+      class="text-xl rounded-lg bg-black text-white px-7 py-3"
+      (click)="fetchSong()"
+    >
+      Search
+    </button>
+  </div>
 
-    </div>
-
+  <!-- Title -->
+  <div class="p-4 text-center font-semibold">
+    <h1 class="text-4xl sm:text-6xl lg:text-7xl text-white">
+      "Search It. Play It. <span class="text-red-500">Love It"</span>
+    </h1>
+  </div>
 </div>
