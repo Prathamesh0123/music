@@ -8,8 +8,10 @@ import { ArrowDownToLine, ChevronDown, ChevronUp ,ChevronLeft, Heart, ListMusic,
 import { BigPlayerComponent } from './components/big-player/big-player.component';
 import {HttpClientModule} from '@angular/common/http';
 import { HomeComponent } from './components/home/home.component';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PopUpPlayerComponent } from './components/pop-up-player/pop-up-player.component';
+import { SingUpComponent } from './components/form/sing-up/sing-up.component';
+import { LoginComponent } from './components/form/login/login.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -17,6 +19,8 @@ import { PopUpPlayerComponent } from './components/pop-up-player/pop-up-player.c
     BigPlayerComponent,
     HomeComponent,
     PopUpPlayerComponent,
+    SingUpComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,
@@ -42,7 +46,9 @@ import { PopUpPlayerComponent } from './components/pop-up-player/pop-up-player.c
     }),
     HttpClientModule,
     FormsModule,
+    ReactiveFormsModule,
   ],
+  
   providers: [],
   bootstrap: [AppComponent]
 })

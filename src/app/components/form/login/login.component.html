@@ -1,0 +1,46 @@
+<div class="bg-purple-800 grid place-items-center h-screen">
+    <!-- main container 1 col only vertical layout  -->
+    <div class="grid grid-cols-1 border-[2px] border-pink-200 bg-white/10 backdrop-blur-sm rounded-md shadow-md">
+        <!-- login/signup button speration  -->
+        <div class="grid grid-cols-12 place-content-center gap-2 bg-white border-b">
+            <div (click)="GotosignUp()" class="col-span-6 py-1" [ngClass]="{
+                'bg-pink-500 text-white': isSignUp,
+                'bg-gray-400 text-black': !isSignUp
+                }"
+                > 
+                <h1 class="font-bold sm:text-4xl p-2 text-center cursor-pointer">SignUp</h1>
+            </div>
+            <div class="col-span-6 py-1" [ngClass]="{
+                'bg-pink-500 text-white': !isSignUp,
+                'bg-gray-400 text-black': isSignUp
+
+                }"
+                >
+               <h1 class="font-bold sm:text-4xl p-2 text-center cursor-pointer">LogIn</h1>
+            </div>
+        </div>
+        <!-- inputs email and password -->
+        <form [formGroup]="authForm" (ngSubmit)="logIn(authForm)">
+         <div class="grid grid-cols-1 p-4 gap-2 sm:w-[29vw]  w-[85vw]"> 
+
+            <!-- email  -->
+            <label class="text-white sm:text-2xl" for="email">Enter Email</label>
+            <input formControlName="email" class="rounded-md sm:text-[20px] p-1 focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all duration-300 ease-in-out" type="email">
+            <div *ngIf="authForm.get('email')?.touched && authForm.get('email')?.invalid">
+                <small *ngIf="authForm.get('email')?.errors?.['required']" class="text-red-500 font-bold">*Email is required</small>
+                <small *ngIf="authForm.get('email')?.errors?.['email']" class="text-red-500 font-bold">*Invalid Email</small>
+            </div>
+            <!-- password  -->
+            <label class="text-white sm:text-2xl" for="password">Enter Password</label>
+            <input formControlName="password" maxlength="16" class="rounded-md sm:text-[20px] p-1 focus:outline-none focus:ring-2 focus:ring-pink-400 transition-all duration-300 ease-in-out" type="password">
+            <div *ngIf="authForm.get('password')?.touched && authForm.get('password')?.invalid">
+                <small *ngIf="authForm.get('password')?.errors?.['required']" class="text-red-500 font-bold">*Password required</small>
+                <small *ngIf="authForm.get('password')?.errors?.['minlength']" class="text-red-500 font-bold">*required 6 characters</small>
+            </div>
+         </div>
+        <div class="mt-4 text-center w-full">
+            <button class="w-full mt-4 text-center bg-pink-500 p-2 text-white sm:text-2xl cursor-pointer rounded-t-md hover:bg-pink-600 transition-all duration-300" type="submit"  [disabled]="authForm.invalid">SignUp</button>
+         </div>
+         </form>
+    </div>
+</div>

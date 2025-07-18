@@ -49,7 +49,7 @@ app.get('/api/download',async(req,res)=>{
         artist: artistPart.trim(),
         thumbnail: videoInfo.entries[0].thumbnail,
         title: songPart,
-        url: `https://scroll-governor-wifi-this.trycloudflare.com/songs/${fileName}`
+        url: `http://localhost:3000/songs/${fileName}`
     };
 
     console.log(songData);
