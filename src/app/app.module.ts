@@ -4,7 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MainMusicPlayerComponent } from './components/main-music-player/main-music-player.component';
-import { ArrowDownToLine, ChevronDown, ChevronUp ,ChevronLeft, Heart, ListMusic, LucideAngularModule, UserRoundPen ,LogOut, Play, StepForward, StepBack, Pause, Volume1, VolumeX, House, Menu, Search} from 'lucide-angular';
+import { ArrowDownToLine, ChevronDown, ChevronUp ,ChevronLeft, Heart, ListMusic, LucideAngularModule, UserRoundPen ,LogOut, Play, StepForward, StepBack, Pause, Volume1, VolumeX, House, Menu, Search, Pencil, Save} from 'lucide-angular';
 import { BigPlayerComponent } from './components/big-player/big-player.component';
 import {HttpClientModule} from '@angular/common/http';
 import { HomeComponent } from './components/home/home.component';
@@ -12,6 +12,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PopUpPlayerComponent } from './components/pop-up-player/pop-up-player.component';
 import { SingUpComponent } from './components/form/sing-up/sing-up.component';
 import { LoginComponent } from './components/form/login/login.component';
+import { ProfilePictureComponent } from './components/form/profile-picture/profile-picture.component';
+import { ProfileComponent } from './components/profile/profile.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -20,7 +22,9 @@ import { LoginComponent } from './components/form/login/login.component';
     HomeComponent,
     PopUpPlayerComponent,
     SingUpComponent,
-    LoginComponent
+    LoginComponent,
+    ProfilePictureComponent,
+    ProfileComponent
   ],
   imports: [
     BrowserModule,
@@ -43,6 +47,8 @@ import { LoginComponent } from './components/form/login/login.component';
       ChevronLeft,
       Menu,
       Search,
+      Pencil,
+      Save,
     }),
     HttpClientModule,
     FormsModule,

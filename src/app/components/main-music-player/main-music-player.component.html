@@ -35,7 +35,7 @@
     </div>
     <!-- profile pick -->
     <div class="mt-7 p-1 rounded-full bg-pink-400">
-        <img class="rounded-full w-[75px] h-[75px]" src="../../../assets/profilePick.webp" alt="">
+      <img class="rounded-full w-[75px] h-[75px]" [src]="userData.userProfileUrl || 'assets/noprofile.webp'" alt="">
     </div>
 
     <lucide-icon (click)="showControls()" *ngIf="!showControl" name="ChevronDown" class="cursor-pointer hover:drop-shadow-[0_0_6px_black] transition-all-400"></lucide-icon>
@@ -52,7 +52,7 @@
         <lucide-icon name="Search" (click)="gotoSearchBar()" class="cursor-pointer sm:w-7 sm:h-7 hover:drop-shadow-[0_0_6px_black] transition-all"></lucide-icon>
         <lucide-icon name="Heart" class="cursor-pointer sm:w-7 sm:h-7 text-red-500 hover:drop-shadow-[0_0_6px_red] transition-all"></lucide-icon>
         <lucide-icon name="ListMusic" class="cursor-pointer sm:w-7 sm:h-7 hover:drop-shadow-[0_0_6px_black] transition-all"></lucide-icon>
-        <lucide-icon name="UserRoundPen" class="cursor-pointer sm:w-7 sm:h-7 hover:drop-shadow-[0_0_6px_black] transition-all-400"></lucide-icon>
+        <lucide-icon name="UserRoundPen" (click)="goToProfle()" class="cursor-pointer sm:w-7 sm:h-7 hover:drop-shadow-[0_0_6px_black] transition-all-400"></lucide-icon>
     </div> 
    </div>
 </div>

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormGroup,FormBuilder,Validators, AbstractControl } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from 'src/app/services/auth.service';
 @Component({
   selector: 'app-sing-up',
   templateUrl: './sing-up.component.html',
@@ -11,7 +12,7 @@ export class SingUpComponent{
   authForm!:  FormGroup;
   passwordMissMatch: boolean = false;
 
-  constructor(private fb:FormBuilder,private router:Router){
+  constructor(private fb:FormBuilder,private router:Router,private userAuth:AuthService){
     this.authForm = this.fb.group({
       name:['',Validators.required],
       email:['',[Validators.required,Validators.email]],
@@ -35,8 +36,20 @@ export class SingUpComponent{
   }
 
   signUp(form: FormGroup) {
-    console.log(form.value);
-    this.authForm.reset();
-  }
 
+    const {name,email,password} = form.value;
+    console.log(name);
+    console.log(email);
+    console.log(password);
+    this.userAuth.signUpUser({name,email,password}).subscribe({
+      next:(res)=>{
+        alert(res.message);
+          this.authForm.reset();
+          this.router.navigate(['/']);
+      },
+      error:(err)=>{
+        alert(err.message);
+      }
+    })
+  }
 }

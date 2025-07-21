@@ -9,7 +9,8 @@ import { Router } from '@angular/router';
 export class HomeComponent {
   constructor(private musicApi:MusicFetchApiService,private router:Router){}
   songName:string = '';
-  
+    
+
   fetchSong(){
     if(this.songName){
       this.musicApi.getSong(this.songName).subscribe({

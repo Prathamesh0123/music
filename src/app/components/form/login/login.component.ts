@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -11,7 +12,7 @@ export class LoginComponent {
   isSignUp : boolean = false;
   authForm!:  FormGroup;
 
-  constructor(private fb:FormBuilder,private router:Router){
+  constructor(private fb:FormBuilder,private router:Router,private authService:AuthService){
     this.authForm = this.fb.group({
       email:['',[Validators.required,Validators.email]],
       password:['',[Validators.required,Validators.minLength(6)]],
@@ -28,8 +29,19 @@ export class LoginComponent {
   }
 
   logIn(form: FormGroup) {
-    console.log(form.value);
-    this.authForm.reset();
+
+    const {email,password} = form.value;
+    this.authService.logInUser({email,password}).subscribe({
+      next:(res:any) =>{
+        localStorage.setItem('token',res.token);
+        console.log('welcome : ',res.message);
+        this.router.navigate(['/profilePhoto']);
+        this.authForm.reset();
+      },
+      error:(err) =>{
+        console.log(err);
+      }
+    })
   }
   
 }

@@ -1,11 +1,24 @@
 const express = require('express');
 const youtubebadl = require('youtube-dl-exec');
 const path = require('path');
+const dotenv = require('dotenv');
 const cors = require('cors');
-const { log } = require('console');
-const app = express();
+const authRoutes = require('./routes/auth');
 const port = 3000;
+ const connectDB = require('./config/db')
+//midleware
+const app = express();
+dotenv.config();
+
+//DB connection 
+connectDB();
+
 app.use(cors());
+app.use(express.json());
+
+app.use('/api/auth',authRoutes);
+
+
 app.get('/api/download',async(req,res)=>{
     const query = req.query.search;
     const videoInfo = await youtubebadl(`ytsearch1:${query}`,{

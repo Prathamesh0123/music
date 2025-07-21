@@ -5,7 +5,9 @@ import { MainMusicPlayerComponent } from './components/main-music-player/main-mu
 import { HomeComponent } from './components/home/home.component';
 import { SingUpComponent } from './components/form/sing-up/sing-up.component';
 import { LoginComponent } from './components/form/login/login.component';
-
+import { ProfilePictureComponent } from './components/form/profile-picture/profile-picture.component';
+import { authGuard } from './auth.guard';
+import { ProfileComponent } from './components/profile/profile.component';
 const routes: Routes = [
   {
     path: '',
@@ -16,15 +18,21 @@ const routes: Routes = [
     path: '',
     component: MainMusicPlayerComponent,
     children: [
-      { path: 'home', component: HomeComponent },
-      { path: 'musicPlayer', component: BigPlayerComponent }
+      { path: 'home', component: HomeComponent ,canActivate:[authGuard]},
+      { path: 'musicPlayer', component: BigPlayerComponent ,canActivate:[authGuard]},
+      { path: 'profile', component:ProfileComponent,canActivate:[authGuard]}
     ]
   },
   {
     path:'signup',
     component:SingUpComponent
-  }
-  // Optional: wildcard for 404
+  },
+  {
+    path:'profilePhoto',
+    component:ProfilePictureComponent,
+    canActivate:[authGuard]
+  }  
+// Optional: wildcard for 404
   // { path: '**', redirectTo: '' }
 ];
 
