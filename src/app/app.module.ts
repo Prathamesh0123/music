@@ -14,6 +14,7 @@ import { SingUpComponent } from './components/form/sing-up/sing-up.component';
 import { LoginComponent } from './components/form/login/login.component';
 import { ProfilePictureComponent } from './components/form/profile-picture/profile-picture.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations'
 @NgModule({
   declarations: [
     AppComponent,
@@ -28,6 +29,7 @@ import { ProfileComponent } from './components/profile/profile.component';
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     AppRoutingModule,
     LucideAngularModule.pick({
       ChevronDown,

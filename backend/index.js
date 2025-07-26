@@ -79,7 +79,7 @@ app.get('/api/download',async(req,res)=>{
     }
 
 });
-
+app.use('/api/song',require('./routes/song'));
 app.use('/songs',express.static(path.join(__dirname,'songs')));
 
 app.listen(port,()=>{

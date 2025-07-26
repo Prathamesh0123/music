@@ -8,7 +8,7 @@
      <!-- <app-home></app-home> -->
      <!-- This displays your routes -->
     <router-outlet></router-outlet>
-    <app-pop-up-player></app-pop-up-player>
+    <app-pop-up-player *ngIf="songArray.length > 0"></app-pop-up-player>
 
 
 </div>
@@ -35,7 +35,7 @@
     </div>
     <!-- profile pick -->
     <div class="mt-7 p-1 rounded-full bg-pink-400">
-      <img class="rounded-full w-[75px] h-[75px]" [src]="userData.userProfileUrl || 'assets/noprofile.webp'" alt="">
+      <img class="rounded-full w-[75px] h-[75px]" [src]="userData?.userProfileUrl || 'assets/noprofile.webp'" alt="">
     </div>
 
     <lucide-icon (click)="showControls()" *ngIf="!showControl" name="ChevronDown" class="cursor-pointer hover:drop-shadow-[0_0_6px_black] transition-all-400"></lucide-icon>

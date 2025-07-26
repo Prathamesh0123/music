@@ -1,4 +1,4 @@
-import { Component,OnInit } from '@angular/core';
+import { Component,OnDestroy,OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MusicData } from 'src/app/models/music-data';
 import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
@@ -7,7 +7,7 @@ import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
   templateUrl: './big-player.component.html',
   styleUrls: ['./big-player.component.css']
 })
-export class BigPlayerComponent implements OnInit{
+export class BigPlayerComponent implements OnInit,OnDestroy{
   showControl:boolean = false;
 
   isPlaying:boolean = false;
@@ -24,16 +24,24 @@ export class BigPlayerComponent implements OnInit{
   songArray:MusicData [] = [];
   constructor(private songService:MusicFetchApiService,private router:Router){}
   ngOnInit():void{
-
+    this.songService.musicDataBehaviorSub.subscribe(data =>{
+      this.songArray = data;
+      
+      // if (this.songArray.length === 0) {
+      //   this.songService.backPress(true); // ✅ Add this line
+      //   this.router.navigate(['/home']);
+      // }
+    })
     this.songService.currentIndexBehaviorSub.asObservable().subscribe(val =>{
       this.currentSongIndex = val;
     })
 
-    this.songArray = this.songService.getSongArray();
-    this.songService.getSongMetadata().subscribe( songMetadata => {
-      this.songData = songMetadata;
-      // this.songService.playSong(this.songData.url);
-    });
+    // this.songArray = this.songService.getSongArray();
+    // this.songService.getSongMetadata().subscribe( songMetadata => {
+    //   this.songData = songMetadata;
+    //   // this.songService.playSong(this.songData.url);
+    // })
+
  
     this.songService.backPress(false);
     this.songService.emitCurrentVolume();
@@ -53,7 +61,10 @@ export class BigPlayerComponent implements OnInit{
     });
     
   }
-  
+  //show music pop up
+  ngOnDestroy(): void {
+    this.songService.backPress(true);
+  }
   showControls():void{
     this.showControl = !this.showControl;
 

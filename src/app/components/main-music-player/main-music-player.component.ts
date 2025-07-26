@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
+import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 @Component({
   selector: 'app-main-music-player',
   templateUrl: './main-music-player.component.html',
@@ -11,10 +12,28 @@ export class MainMusicPlayerComponent implements OnInit{
   isSidebarOpen:boolean = false;
   screenWidth = window.innerWidth;
   userData:any;
-  constructor(private router:Router,private authService:AuthService){}
+  songArray:any []= [];
+  constructor(private router:Router,private authService:AuthService,private songService:MusicFetchApiService){}
 
   ngOnInit() {
-    this.authService.getUserData().subscribe({
+    // this.songArray =  this.songService.getSongArray()
+    this.songService.musicDataBehaviorSub.subscribe(data =>{
+      this.songArray = data;
+    });
+    this.loadData();
+    this.authService.profileChanged$.subscribe(()=>{//it will trigger autometically when the profile is changed!!!
+      this.loadData();
+    });
+    window.addEventListener('resize', () => {
+      this.screenWidth = window.innerWidth;
+      if (this.screenWidth >= 768) {
+        this.isSidebarOpen = false; // reset on desktop
+      }
+    });
+  }
+
+  loadData(){
+      this.authService.getUserData()?.subscribe({
       next: (res: any) => {
         console.log(res.message);
         console.log(res.data.userProfileUrl);
@@ -26,16 +45,8 @@ export class MainMusicPlayerComponent implements OnInit{
       console.error('Error fetching user:', err);
       alert('ERROR: ' + JSON.stringify(err));
     }
-
-    });
-    window.addEventListener('resize', () => {
-      this.screenWidth = window.innerWidth;
-      if (this.screenWidth >= 768) {
-        this.isSidebarOpen = false; // reset on desktop
-      }
     });
   }
-
   toggleSidebar() {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
@@ -50,6 +61,9 @@ export class MainMusicPlayerComponent implements OnInit{
 
   goToProfle(){
     this.router.navigate(['/profile']);
+  }
+  onProfilePhotoChange(){
+    this.ngOnInit();
   }
 
 }

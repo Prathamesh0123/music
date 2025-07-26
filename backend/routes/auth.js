@@ -3,6 +3,11 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User')  
 const authMiddleware = require('../config/authMidelware');
+
+router.post('/checkSession',authMiddleware,(req,res)=>{
+    res.status(200).json({message:'valid user!!!'});
+});
+
 router.post('/register',async (req,res)=>{
     try{
         const {name,email,password} = req.body;
@@ -33,7 +38,7 @@ router.post('/login',async(req,res)=>{
         return res.status(401).json({message:'wrong credentials'});
     }
 
-    const getToken = jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:'24h'});
+    const getToken = jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:'10h'});
     res.status(200).json(
         {
             message:'user logged in',
@@ -76,5 +81,46 @@ router.get('/userData',authMiddleware,async(req,res)=>{
             data:user
         }
     )
+});
+
+router.put('/updatename',authMiddleware,async(req,res)=>{
+    const {name} = req.body;
+    const {id} = req.user;
+    
+    const userExist = await User.findById({_id:id});
+    if(!userExist){
+        return res.status(401).json({message:'user not found'});
+    }
+    try{
+        await User.updateOne(
+            {_id:id},
+            {name:name}
+        )
+
+        res.status(200).json({message:'username updated'});
+    }catch(err){
+        res.status(500).json({message:'internal server issue'});
+    }
+});
+
+router.put('/updatemail',authMiddleware,async(req,res)=>{   
+    const {email} = req.body;
+    const {id} = req.user;
+
+    const user = await User.findById({_id:id});
+    if(!user){
+        return res.status(401).json({message:'inavalid user'});
+    }
+    
+    try{
+        await User.updateOne(
+            {_id:id},
+            {email:email}
+        )
+        
+        res.status(200).json({message:'email updated'});
+    }catch(err){
+        res.status(500).json({message:'internal server issue'});
+    }
 });
 module.exports = router;

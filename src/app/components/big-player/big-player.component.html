@@ -28,7 +28,7 @@
     <!-- Queue -->
     <div class="grid grid-cols-1 bg-slate-800 text-white overflow-y-auto scrollbar-hidden h-[145px] w-[90%] sm:w-[70%] rounded-md">
       <h1 class="bg-pink-600 font-semibold ps-3 text-white p-1">Songs in Queue</h1>
-
+      
       <div
         *ngFor="let song of songArray; let i = index"
         (click)="playFromQue(i)"

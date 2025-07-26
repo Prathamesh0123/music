@@ -14,17 +14,22 @@ export class PopUpPlayerComponent {
 
   currentTime:number = 0;
   duration:number = 0;
-  songData : MusicData[] =  [];
+  songData :any[] = [];
   currentIndex!:number;
   constructor(private router:Router,private songService:MusicFetchApiService){}
 
   
   ngOnInit(): void {
-      this.songData = this.songService.getSongArray();
+      // this.songData = this.songService.getSongArray();
+      this.songService.musicDataBehaviorSub.subscribe(data =>{
+        this.songData = data;
+      });
       this.songService.currentIndexBehaviorSub.asObservable().subscribe(val =>{
         this.currentIndex = val;
       })
-
+      if(this.songData.length == 0){
+        this.router.navigate(['/home']);
+      }
       this.songService.getSongCurrentTime().subscribe(val =>{
         this.currentTime = val;
       })

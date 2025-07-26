@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { concatMap } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { SupabaseService } from 'src/app/services/supabase.service';
 
@@ -15,7 +16,7 @@ export class ProfilePictureComponent implements OnInit {
 
   constructor(private supabaseService:SupabaseService,private router:Router,private authService:AuthService){}
   ngOnInit(): void {
-    const user = this.authService.getUserData().subscribe({
+    const user = this.authService.getUserData()?.subscribe({
         next:(res:any)=>{
           if(!res.data.userProfileUrl){            
                 this.router.navigate(['/profilePhoto']);
@@ -48,23 +49,28 @@ export class ProfilePictureComponent implements OnInit {
             console.log('UID not found in token');
             return;
         }
-        const filePath = `profile-picture/${userId}`;
-        this.supabaseService.uploadImage(this.selectedFile,filePath).subscribe({
-          next:(res)=>{
-            if(res.data.path){
-              this.supabaseService.setImageUrl(filePath);
-              console.log('Image Uploaded...');
-              this.router.navigate(['/home']);
-            }else{
-              console.log('Error uploading Image');
-            }
+        const filePath = `profile-picture/${userId}_${Date.now()}`;
+        
+        this.supabaseService.uploadImage(this.selectedFile,filePath).pipe(
+          concatMap((uploadSupabase)=>{
+            if(!uploadSupabase.data.path){
+                throw new Error('Error upload in supabase');
+              }
+              const imgUrl = this.supabaseService.getPublicUrl(filePath);
+              return this.supabaseService.setImageUrl(imgUrl);
+          })
+        ).subscribe({
+          next:(backEndRes)=>{
+            console.log(backEndRes.message);
+            this.router.navigate(['/home']);
           },
           error:(err)=>{
-            console.log('observable error',err);
+            console.log(err.message);
           }
-        });
+        })
     }else{
         this.router.navigate(['/home']);
     }
   }
+
 }

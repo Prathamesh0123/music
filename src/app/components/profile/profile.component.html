@@ -1,7 +1,7 @@
-    <div class="bg-[#131c38] h-screen flex flex-col space-y-4 justify-center items-center">
+    <div class="bg-[#131c38] h-screen flex flex-col pt-14 items-center" @fadeIn>
         <div class="relative mb-3">
             <div class="bg-pink-500 rounded-full shadow-[0_0_25px_5px_rgba(244,114,182,0.6)]">
-                <img class="p-1 rounded-full w-[260px] h-[260px]" [src]="imgPreview || userData.userProfileUrl" alt="">
+                <img class="p-1 rounded-full w-[260px] h-[260px]" [src]="imgPreview || userData?.userProfileUrl" alt="">
             </div>
             <div *ngIf="!isImgSelected" (click)="fileInput.click()" class="absolute bottom-2 right-4 cursor-pointer bg-white sm:h-10 sm:w-10 p-2 rounded-md hover:bg-gray-400">
                 <lucide-icon 
