@@ -4,7 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MainMusicPlayerComponent } from './components/main-music-player/main-music-player.component';
-import { ArrowDownToLine, ChevronDown, ChevronUp ,ChevronLeft, Heart, ListMusic, LucideAngularModule, UserRoundPen ,LogOut, Play, StepForward, StepBack, Pause, Volume1, VolumeX, House, Menu, Search, Pencil, Save} from 'lucide-angular';
+import { ArrowDownToLine, ChevronDown, ChevronUp ,ChevronLeft, Heart, ListMusic, LucideAngularModule, UserRoundPen ,LogOut, Play, StepForward, StepBack, Pause, Volume1, VolumeX, House, Menu, Search, Pencil, Save, BadgePlus, CircleSmall, EllipsisVertical} from 'lucide-angular';
 import { BigPlayerComponent } from './components/big-player/big-player.component';
 import {HttpClientModule} from '@angular/common/http';
 import { HomeComponent } from './components/home/home.component';
@@ -14,7 +14,13 @@ import { SingUpComponent } from './components/form/sing-up/sing-up.component';
 import { LoginComponent } from './components/form/login/login.component';
 import { ProfilePictureComponent } from './components/form/profile-picture/profile-picture.component';
 import { ProfileComponent } from './components/profile/profile.component';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations'
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import { AddToPlayListComponent } from './components/add-to-play-list/add-to-play-list.component';
+import { PlaylistComponent } from './components/playlist/playlist.component'
+import {MatProgressBarModule } from '@angular/material/progress-bar'
+import {MatSnackBarModule} from '@angular/material/snack-bar';
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -25,7 +31,10 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations'
     SingUpComponent,
     LoginComponent,
     ProfilePictureComponent,
-    ProfileComponent
+    ProfileComponent,
+    AddToPlayListComponent,
+    PlaylistComponent,
+    
   ],
   imports: [
     BrowserModule,
@@ -51,10 +60,16 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations'
       Search,
       Pencil,
       Save,
+      BadgePlus,
+      CircleSmall,
+      EllipsisVertical,
     }),
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
+    MatProgressBarModule ,
+    MatSnackBarModule,
+
   ],
   
   providers: [],

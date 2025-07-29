@@ -2,10 +2,12 @@ import { Component } from '@angular/core';
 import { FormGroup,FormBuilder,Validators, AbstractControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/services/auth.service';
+import { slideUpDownFade } from 'src/app/animations/animations';
 @Component({
   selector: 'app-sing-up',
   templateUrl: './sing-up.component.html',
-  styleUrls: ['./sing-up.component.css']
+  styleUrls: ['./sing-up.component.css'],
+  animations:[slideUpDownFade]
 })
 export class SingUpComponent{
   isSignUp : boolean = false;

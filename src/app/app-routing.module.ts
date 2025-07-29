@@ -8,6 +8,8 @@ import { LoginComponent } from './components/form/login/login.component';
 import { ProfilePictureComponent } from './components/form/profile-picture/profile-picture.component';
 import { authGuard } from './auth.guard';
 import { ProfileComponent } from './components/profile/profile.component';
+import { AddToPlayListComponent } from './components/add-to-play-list/add-to-play-list.component';
+import { PlaylistComponent } from './components/playlist/playlist.component';
 const routes: Routes = [
   {
     path: '',
@@ -20,7 +22,9 @@ const routes: Routes = [
     children: [
       { path: 'home', component: HomeComponent ,canActivate:[authGuard]},
       { path: 'musicPlayer', component: BigPlayerComponent ,canActivate:[authGuard]},
-      { path: 'profile', component:ProfileComponent,canActivate:[authGuard]}
+      { path: 'profile', component:ProfileComponent,canActivate:[authGuard]},
+      { path: 'addtoPlayList',component:AddToPlayListComponent,canActivate:[authGuard]},
+      { path: 'playList',component:PlaylistComponent,canActivate:[authGuard]}
     ]
   },
   {

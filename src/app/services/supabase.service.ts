@@ -30,8 +30,8 @@ export class SupabaseService {
     return this.http.post('http://localhost:3000/api/auth/uploadImage',{imageUrl},{headers});
    }
 
-  deleteImage(path: string) {
-    return from(this.supabase.storage.from('user-profile-images').remove([path]));
+  updateImage(path: string,file:any) {
+    return from(this.supabase.storage.from('user-profile-images').update(path,file));
   }
 
    getPublicUrl(path: string): string {

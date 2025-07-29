@@ -21,7 +21,7 @@
         </div>
         <!-- inputs email and password -->
         <form [formGroup]="authForm" (ngSubmit)="logIn(authForm)">
-         <div class="grid grid-cols-1 p-4 gap-2 sm:w-[29vw]  w-[85vw]"> 
+         <div @slideUpDownFade class="grid grid-cols-1 p-4 gap-2 sm:w-[29vw]  w-[85vw]"> 
 
             <!-- email  -->
             <label class="text-white sm:text-2xl" for="email">Enter Email</label>

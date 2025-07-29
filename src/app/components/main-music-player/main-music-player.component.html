@@ -1,4 +1,4 @@
-<div class="flex flex-col sm:flex-row w-full h-screen">
+<div class="flex flex-col sm:flex-row w-full h-screen overflow-y-hidden">
 
 <div class="flex w-full h-screen">
   <!-- left section -->
@@ -51,7 +51,7 @@
         >
         <lucide-icon name="Search" (click)="gotoSearchBar()" class="cursor-pointer sm:w-7 sm:h-7 hover:drop-shadow-[0_0_6px_black] transition-all"></lucide-icon>
         <lucide-icon name="Heart" class="cursor-pointer sm:w-7 sm:h-7 text-red-500 hover:drop-shadow-[0_0_6px_red] transition-all"></lucide-icon>
-        <lucide-icon name="ListMusic" class="cursor-pointer sm:w-7 sm:h-7 hover:drop-shadow-[0_0_6px_black] transition-all"></lucide-icon>
+        <lucide-icon name="ListMusic" (click)="gotoPlayList()" class="cursor-pointer sm:w-7 sm:h-7 hover:drop-shadow-[0_0_6px_black] transition-all"></lucide-icon>
         <lucide-icon name="UserRoundPen" (click)="goToProfle()" class="cursor-pointer sm:w-7 sm:h-7 hover:drop-shadow-[0_0_6px_black] transition-all-400"></lucide-icon>
     </div> 
    </div>

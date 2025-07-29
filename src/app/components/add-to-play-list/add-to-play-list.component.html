@@ -1,0 +1,58 @@
+<div class="h-full space-y-5 sm:space-y-14">
+  <div *ngIf="!addToPlaylist">
+    <div class="flex flex-col items-center space-y-5">
+        <!-- back button -->
+        <lucide-icon (click)="goBacktoPlayer()" class="absolute text-white sm:h-8 sm:w-8 cursor-pointer left-1 top-2 sm:left-2 sm:top-2" name="ChevronLeft"></lucide-icon>
+        <!-- heading  -->
+        <div class="mt-4 sm:mt-3">
+            <p class="text-base text-center sm:text-2xl text-white">Add To Play list</p>
+        </div>
+        <!-- create new playlist button  -->
+        <div (click)="setPlaylist()"  class="bg-white rounded-full">
+            <button class="text-black font-medium sm:text-3xl text-2xl px-4 py-2 sm:py-3 sm:px-7">New Playlist</button>
+        </div>
+    </div>
+    <!-- card showing playlist  -->
+<div class="overflow-y-auto sm:max-h-[400px] sm:px-4 hide-scrollbar">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+
+    <div *ngFor="let playlist of songData" class="flex sm:flex-col hover:bg-gray-800 transition duration-300 cursor-pointer p-2 sm:p-4 rounded-md hover:shadow-xl">
+
+      <!-- Image -->
+      <div class="w-20 h-20 sm:w-full sm:h-auto shrink-0">
+        <img [src]="playlist.thumbnail" class="w-full h-full object-cover rounded-md" alt="Playlist Image">
+      </div>
+
+      <!-- Content -->
+      <div class="flex flex-col justify-center ml-4 sm:mt-3 w-full">
+        <div class="flex items-center w-full">
+          <h1 class="text-white text-base sm:text-xl">{{playlist.title}}</h1>
+          <lucide-icon (click)="addToExistingPlayList(playlist)" class="ms-auto  sm:ml-auto text-white  sm:mt-2 sm:h-6 sm:w-6 hover:drop-shadow-[0_0_6px_green]" name="CircleSmall"></lucide-icon>
+        </div>
+        <p class="text-white text-sm sm:text-base">playlist · prathmesh batane</p>
+      </div>
+
+    </div>     
+
+  </div>
+</div>
+</div>
+<!-- create new playlist add name title for playlist  -->
+ <div *ngIf="addToPlaylist" class="w-full min-h-screen flex flex-col justify-center items-center px-4">
+  <div  class="w-full max-w-md flex flex-col space-y-4 justify-center items-center">
+    <h1 class="text-white text-center pb-4 font-bold text-2xl">Give playlist your name</h1>
+    <input 
+    class="text-3xl bg-transparent outline-none text-center border-b-2 p-1 text-white border-b-white" 
+    placeholder="#Enter Playlist Name"
+    type="text"
+    [(ngModel)]="playListName"
+    >
+
+  <div class="flex space-x-5">
+    <button (click)="cancel()" class="text-xl mt-4 text-white bg-transparent border rounded-full px-5 py-2 hover:bg-white hover:text-black transition duration-200 active:scale-95">Cancel</button>
+    <button (click)="addNewPlayList()" class="text-xl mt-4 font-medium bg-pink-500  rounded-full px-5 py-2 hover:bg-pink-600 transition duration-200 active:scale-95">Create</button>
+  </div>
+</div>
+</div>
+</div>
+

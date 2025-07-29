@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { MusicData } from 'src/app/models/music-data';
+import { slideUpDownFade } from 'src/app/animations/animations';
 import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 
 @Component({
   selector: 'app-pop-up-player',
   templateUrl: './pop-up-player.component.html',
-  styleUrls: ['./pop-up-player.component.css']
+  styleUrls: ['./pop-up-player.component.css'],
+  animations:[slideUpDownFade]
 })
 export class PopUpPlayerComponent {
   showPlayer:boolean = true;

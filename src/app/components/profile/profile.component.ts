@@ -1,21 +1,8 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { AuthService } from 'src/app/services/auth.service';
 import { SupabaseService } from 'src/app/services/supabase.service';
-import { concatMap, switchMap, tap } from 'rxjs/operators'; // <-- Import operator
-import { animate, state, style, transition, trigger } from '@angular/animations';
-//1 in trasition we pass first state in current its :enter state 
-//and scond array of steps haping one by one
-//first step add what style intial opacity set to 0 after 
-//second add aniation easIn for 1 sec and 
-//third is after animation opacity 1 fully visible
-const enterTrasition = transition(':enter',[  
-  style({
-    opacity:0
-  }),
-  animate('300ms ease-in'),style({opacity:1})
-])
-const fadeIn = trigger('fadeIn',[enterTrasition]);
-
+import { concatMap } from 'rxjs/operators'; // <-- Import operator
+import { fadeIn } from 'src/app/animations/animations';
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
@@ -68,11 +55,11 @@ export class ProfileComponent implements OnInit {
       }
       this.imgPreview = null;
       const userId = this.authService.getUid();
-      const filePath = `profile-picture/${userId}_${Date.now()}`;
+      const filePath = `profile-picture/${userId}`;
       console.log(filePath);
       
       //wait for deletion then upload 
-      this.supabaseService.deleteImage(filePath).pipe(
+      this.supabaseService.updateImage(filePath,this.selectedFile).pipe(
         concatMap((res)=>{
             console.log(res.data);
             return this.supabaseService.uploadImage(this.selectedFile!,filePath);
@@ -83,7 +70,8 @@ export class ProfileComponent implements OnInit {
             throw new Error('Error upload in supabase');
           }
           const imgUrl = this.supabaseService.getPublicUrl(filePath);
-          return this.supabaseService.setImageUrl(imgUrl);
+          const finalUrl = `${imgUrl}?t=${new Date().getTime()}`;//crutal part catche busting 
+          return this.supabaseService.setImageUrl(finalUrl);
         })
       ).subscribe({
         // handled all the final res return by setImagUrl

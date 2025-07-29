@@ -66,4 +66,8 @@ export class MainMusicPlayerComponent implements OnInit{
     this.ngOnInit();
   }
 
+  gotoPlayList(){
+    this.router.navigate(['/playList']);
+  }
+
 }

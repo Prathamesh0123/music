@@ -1,5 +1,5 @@
   import { Injectable } from '@angular/core';
-  import { HttpClient } from '@angular/common/http';
+  import { HttpClient, HttpHeaders } from '@angular/common/http';
   import { filter, Observable, of } from 'rxjs';
   import { BehaviorSubject } from 'rxjs';
   import { MusicData } from '../models/music-data';
@@ -39,7 +39,7 @@
     songMetaDataBehaviorSub = new BehaviorSubject<any>(0);
 
     audio:HTMLAudioElement  = new Audio();
-
+    currentSongInPlaylistBehavuiorSub = new BehaviorSubject<any>('');
     constructor(private http:HttpClient,private router:Router) { 
       this.loadSongsOnRefresh();
       this.audio.addEventListener('loadedmetadata',()=>{
@@ -125,9 +125,67 @@
         });
       }
     }
+    if(source == 'playlist'){
+      const token = localStorage.getItem('token');
+      const playListName = sessionStorage.getItem('playlistName');
+      console.log(playListName);
+      const headers = new HttpHeaders({
+        Authorization:`Bearer ${token}`
+      });
+      console.log('api stared');
+      this.http.post(`http://localhost:3000/api/song/getSinglePlayList`,{playListName},{headers}).subscribe({
+         next: (res:any) => {
+            this.musicData = res.data;
+
+            this.musicDataBehaviorSub.next(this.musicData);
+            this.currentIndexBehaviorSub.next(0);            
+          },
+          error:(err)=>{
+            console.log(err.message);
+          }
+      });
+    }
   }
 
+  playFromPlayList(playListToPlay?:any){
+    this.musicData = playListToPlay;
+    console.log(playListToPlay.title);
+    this.musicDataBehaviorSub.next(this.musicData);
+    this.currentIndexBehaviorSub.next(0);
+    this.curretSourceBehavoirSub.next('playlist');
+    sessionStorage.setItem('songSource',this.curretSourceBehavoirSub.value.toString());  
+    // console.log(this.musicData);
+  }
 
+  addSongToPlayList(playListName:string,newSong:any){
+    const token = localStorage.getItem('token');
+    if(!token){
+      console.log('Invalid user!!');
+      return; 
+    }
+    const headers = new HttpHeaders({
+      Authorization:`Bearer ${token}`
+    });
+    return this.http.post(`http://localhost:3000/api/song/addToPlaylist`,{playListName,newSong},{headers});
+  }
+
+  getSongFromPlaylist(){
+    const token = localStorage.getItem('token');
+    if(!token){
+      console.log('Invalid user!!');
+      return; 
+    }
+    const headers = new HttpHeaders({
+      Authorization:`Bearer ${token}`
+    });
+
+    return this.http.get(`http://localhost:3000/api/song/getPlayListData`,{headers});
+  }
+    // those parameters mater lot litrally lot 
+    //specially url and songId when i get Data from current song
+    //that add to be in playlist the User model inside backend have 
+    //diffrent fileds so that not adding coz of that so i have to match this
+    //parameters inside User model--Songs[] array the url and songId
     setSongData(meta:{title:string,thumbnail:string,artist:string,url:string,songId:string}){
       // this.songmetaData = meta;
       const isDuplicate = this.musicData.some(song => song.url == meta.url);

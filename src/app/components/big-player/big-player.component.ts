@@ -1,13 +1,16 @@
-import { Component,OnDestroy,OnInit } from '@angular/core';
+import { AfterViewInit, Component,OnDestroy,OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MusicData } from 'src/app/models/music-data';
 import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
+import { slideUpDownFade } from 'src/app/animations/animations';
+import { initFlowbite } from 'flowbite';
 @Component({
   selector: 'app-big-player',
   templateUrl: './big-player.component.html',
-  styleUrls: ['./big-player.component.css']
+  styleUrls: ['./big-player.component.css'],
+  animations:[slideUpDownFade]
 })
-export class BigPlayerComponent implements OnInit,OnDestroy{
+export class BigPlayerComponent implements OnInit,OnDestroy,AfterViewInit{
   showControl:boolean = false;
 
   isPlaying:boolean = false;
@@ -23,6 +26,9 @@ export class BigPlayerComponent implements OnInit,OnDestroy{
   currentSongIndex!:number;
   songArray:MusicData [] = [];
   constructor(private songService:MusicFetchApiService,private router:Router){}
+  ngAfterViewInit(): void {
+      initFlowbite();
+  }
   ngOnInit():void{
     this.songService.musicDataBehaviorSub.subscribe(data =>{
       this.songArray = data;
@@ -130,5 +136,10 @@ backPressed(){
   this.loadPopUp = true;
   this.router.navigate(['/home']);
   this.songService.backPress(this.loadPopUp);
+}
+
+gotoAddplayList(currentSong:any){
+  this.songService.currentSongInPlaylistBehavuiorSub.next(currentSong);
+  this.router.navigate(['/addtoPlayList']);
 }
 }

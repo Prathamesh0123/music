@@ -3,11 +3,12 @@ import { Router } from '@angular/router';
 import { concatMap } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 import { SupabaseService } from 'src/app/services/supabase.service';
-
+import { slideUpDownFade } from 'src/app/animations/animations';
 @Component({
   selector: 'app-profile-picture',
   templateUrl: './profile-picture.component.html',
-  styleUrls: ['./profile-picture.component.css']
+  styleUrls: ['./profile-picture.component.css'],
+  animations:[slideUpDownFade]
 })
 export class ProfilePictureComponent implements OnInit {
 

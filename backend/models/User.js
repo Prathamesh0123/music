@@ -8,8 +8,9 @@ const userSchema = new mongoose.Schema({
     playList:[
         {
             title:String,
+            thumbnail:String,
             songs:[
-                {title:String,artist:String,thumbnail:String,audioUrl:String,videoId:String}
+                {title:String,artist:String,thumbnail:String,url:String,songId:String}
             ]
         }
     ],

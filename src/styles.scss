@@ -1,0 +1,17 @@
+/* src/styles.scss */
+
+// 1. The @use rule MUST be the very first thing in the file.
+@use '@angular/material' as mat;
+
+// 2. Now you can have your Tailwind directives.
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// 3. The @include rule can come after the imports.
+// This loads the core structural styles for Material components.
+@include mat.core();
+
+// 4. Any other custom global styles can follow.
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

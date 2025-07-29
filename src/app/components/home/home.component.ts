@@ -1,15 +1,8 @@
 import { Component } from '@angular/core';
 import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 import { Router } from '@angular/router';
-import { animate, style, transition, trigger } from '@angular/animations';
-
-const enterAnimation = transition(':enter',[
-  style({
-    opacity:0
-  }),
-  animate('300ms ease-in'),style({opacity:1})
-])
-const fadeIn = trigger('fadeIn',[enterAnimation]);
+import { fadeIn } from 'src/app/animations/animations';
+import { NotificationService } from 'src/app/services/notification.service';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -17,12 +10,13 @@ const fadeIn = trigger('fadeIn',[enterAnimation]);
   animations:[fadeIn],
 })
 export class HomeComponent {
-  constructor(private musicApi:MusicFetchApiService,private router:Router){}
+  constructor(private musicApi:MusicFetchApiService,private router:Router,private snackBar:NotificationService){}
   songName:string = '';
     
-
+showLoader:boolean = false;
   fetchSong(){
     if(this.songName){
+      this.showLoader = true;
       this.musicApi.getSong(this.songName).subscribe({
         next:(response:any)=>{
           // this.musicApi.songUrl = response.url;
@@ -33,6 +27,7 @@ export class HomeComponent {
               url:response.audioUrl,
               songId:response.videoId
             });
+          this.showLoader = false;
           this.router.navigate(['/musicPlayer']);
         },
         error:(err)=>{
@@ -40,7 +35,8 @@ export class HomeComponent {
         }
       })
     }else{
-      alert("Provide song name!!!");
+      // alert("Provide song name!!!");
+      this.snackBar.showError('Provide song name🎵🎵🎵');
     }
 
   }
