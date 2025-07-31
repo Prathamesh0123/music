@@ -17,7 +17,7 @@
   </div>
 
   <!-- Right Content: Title, Queue, Controls -->
-  <div class="flex-1 flex flex-col sm:justify-normal items-center gap-y-16 sm:gap-y-0 sm:space-y-8  mt-4 sm:mt-20">
+  <div class="flex-1 flex flex-col sm:justify-normal items-center gap-y-16 sm:gap-y-0 sm:space-y-4  mt-4 sm:mt-20">
 
     <!-- Song Title -->
     <div class="text-center space-y-1">
@@ -27,7 +27,7 @@
 
     <!-- Queue -->
     <div class="grid grid-cols-1 bg-slate-800 text-white overflow-y-auto scrollbar-hidden h-[145px] sm:h-[185px] w-[90%] sm:w-[70%] rounded-md">
-      <h1 class="bg-pink-600 font-semibold  ps-3 text-white p-4">Songs in Queue</h1>
+      <h1 class="bg-pink-600 font-semibold  ps-3 text-white p-4">{{(playlistName ? playlistName : 'Songs in Queue') | uppercase}}</h1>
       
       <div
         *ngFor="let song of songArray; let i = index"
@@ -51,10 +51,12 @@
             <div [id]="'dropdownDots-' + i" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-800 dark:divide-gray-600">
                 <ul class="py-2 text-sm text-gray-700 dark:text-gray-200">
                     <li>
-                        <a (click)="gotoAddplayList(song)" class="rounded-sm block px-4 py-2 hover:bg-gray-100 dark:hover:bg-pink-600 dark:hover:text-white">Add to playlist</a>
+                        <a (click)="gotoAddplayList(song)" class="rounded-sm block px-4 py-2 hover:bg-gray-100 dark:hover:bg-pink-600 dark:hover:text-white">
+                          {{currentSongSource == 'playlist' ? 'Add to another playlist' : 'Add to playlist' }}
+                        </a>
                     </li>
-                    <li>
-                        <a class="rounded-sm block px-4 py-2 hover:bg-gray-100 dark:hover:bg-red-500 dark:hover:text-white">Remove from playlist</a>
+                    <li *ngIf="currentSongSource == 'playlist'">
+                        <a (click)="deleteSong(song)" class="rounded-sm block px-4 py-2 hover:bg-gray-100 dark:hover:bg-red-500 dark:hover:text-white">Remove from playlist</a>
                     </li>
                 </ul>
             </div>

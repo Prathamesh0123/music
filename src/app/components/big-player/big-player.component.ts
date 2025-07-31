@@ -4,6 +4,7 @@ import { MusicData } from 'src/app/models/music-data';
 import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 import { slideUpDownFade } from 'src/app/animations/animations';
 import { initFlowbite } from 'flowbite';
+import { Subject, takeUntil } from 'rxjs';
 @Component({
   selector: 'app-big-player',
   templateUrl: './big-player.component.html',
@@ -12,8 +13,9 @@ import { initFlowbite } from 'flowbite';
 })
 export class BigPlayerComponent implements OnInit,OnDestroy,AfterViewInit{
   showControl:boolean = false;
-
+  currentSongSource: 'general' | 'playlist' = 'general';
   isPlaying:boolean = false;
+  private destroy$ = new Subject<void>();
 
   currentVlolume:number = 0;
   duration:number = 0;
@@ -25,28 +27,31 @@ export class BigPlayerComponent implements OnInit,OnDestroy,AfterViewInit{
   songData:any;
   currentSongIndex!:number;
   songArray:MusicData [] = [];
+  playlistName:string | null = '';
   constructor(private songService:MusicFetchApiService,private router:Router){}
   ngAfterViewInit(): void {
       initFlowbite();
   }
   ngOnInit():void{
+    // initFlowbite();
     this.songService.musicDataBehaviorSub.subscribe(data =>{
       this.songArray = data;
       
-      // if (this.songArray.length === 0) {
-      //   this.songService.backPress(true); // ✅ Add this line
-      //   this.router.navigate(['/home']);
-      // }
+    });
+    this.songService.playlistNameObs$.subscribe(data =>{
+      this.playlistName = data;
+      console.log(this.playlistName);
+    })
+    this.songService.curretSourceBehavoirSub.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(source =>{
+      this.currentSongSource = source;
+      console.log(this.currentSongSource);
     })
     this.songService.currentIndexBehaviorSub.asObservable().subscribe(val =>{
       this.currentSongIndex = val;
     })
 
-    // this.songArray = this.songService.getSongArray();
-    // this.songService.getSongMetadata().subscribe( songMetadata => {
-    //   this.songData = songMetadata;
-    //   // this.songService.playSong(this.songData.url);
-    // })
 
  
     this.songService.backPress(false);
@@ -70,6 +75,8 @@ export class BigPlayerComponent implements OnInit,OnDestroy,AfterViewInit{
   //show music pop up
   ngOnDestroy(): void {
     this.songService.backPress(true);
+    this.destroy$.next();
+    this.destroy$.complete();
   }
   showControls():void{
     this.showControl = !this.showControl;
@@ -141,5 +148,11 @@ backPressed(){
 gotoAddplayList(currentSong:any){
   this.songService.currentSongInPlaylistBehavuiorSub.next(currentSong);
   this.router.navigate(['/addtoPlayList']);
+}
+
+deleteSong(currentSong:any){
+  const playlistName = sessionStorage.getItem('playlistName');
+  console.log(playlistName);
+  console.log(currentSong.songId);
 }
 }

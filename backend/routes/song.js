@@ -105,7 +105,6 @@ router.post('/getGeneralSong',async(req,res)=>{
     
     const songs = await Song.find({videoId:{ $in: ids }});
     res.json(songs);
-    console.log(songs);
     }catch(err){
         res.status(500).json({message:'internal server issue'});
     }
