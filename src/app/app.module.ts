@@ -6,7 +6,7 @@ import { AppComponent } from './app.component';
 import { MainMusicPlayerComponent } from './components/main-music-player/main-music-player.component';
 import { ArrowDownToLine, ChevronDown, ChevronUp ,ChevronLeft, Heart, ListMusic, LucideAngularModule, UserRoundPen ,LogOut, Play, StepForward, StepBack, Pause, Volume1, VolumeX, House, Menu, Search, Pencil, Save, BadgePlus, CircleSmall, EllipsisVertical} from 'lucide-angular';
 import { BigPlayerComponent } from './components/big-player/big-player.component';
-import {HttpClientModule} from '@angular/common/http';
+import {HttpClientModule , HTTP_INTERCEPTORS} from '@angular/common/http';
 import { HomeComponent } from './components/home/home.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PopUpPlayerComponent } from './components/pop-up-player/pop-up-player.component';
@@ -19,6 +19,7 @@ import { AddToPlayListComponent } from './components/add-to-play-list/add-to-pla
 import { PlaylistComponent } from './components/playlist/playlist.component'
 import {MatProgressBarModule } from '@angular/material/progress-bar'
 import {MatSnackBarModule} from '@angular/material/snack-bar';
+import { AuthIntercepter } from './Interceptor/auth.interceptor';
 
 
 @NgModule({
@@ -72,7 +73,11 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
 
   ],
   
-  providers: [],
+  providers: [{
+    provide:HTTP_INTERCEPTORS,
+    useClass:AuthIntercepter,
+    multi:true
+  }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

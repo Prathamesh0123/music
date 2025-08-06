@@ -33,7 +33,7 @@ export class MainMusicPlayerComponent implements OnInit{
   }
 
   loadData(){
-      this.authService.getUserData()?.subscribe({
+      this.authService.getUserData().subscribe({
       next: (res: any) => {
         console.log(res.message);
         console.log(res.data.userProfileUrl);

@@ -3,6 +3,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { SupabaseService } from 'src/app/services/supabase.service';
 import { concatMap } from 'rxjs/operators'; // <-- Import operator
 import { fadeIn } from 'src/app/animations/animations';
+import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
@@ -17,13 +18,23 @@ export class ProfileComponent implements OnInit {
   userName:string = '';
   userEmail:string = '';
   selectedFile:File | null = null; 
-  songService: any;
+
 
   
-  constructor(private authService:AuthService,private supabaseService:SupabaseService){}
+  constructor(private authService:AuthService,private supabaseService:SupabaseService,private songService:MusicFetchApiService){
+    this.loadData();
+  }
   ngOnInit(): void {
+    // this.loadData();// initial load data
+    this.authService.profileChanged$.subscribe(() =>{
+      this.loadData();//on chnage somthin load 
+    })
+  }
 
-      this.authService.getUserData()?.subscribe({
+  
+  imgPreview: string | ArrayBuffer | null = null;
+  loadData(){
+      this.authService.getUserData().subscribe({
         next:(res:any)=>{
           this.userData = res.data;
           this.userName = this.userData.name;
@@ -31,8 +42,6 @@ export class ProfileComponent implements OnInit {
         }
       })
   }
-  
-  imgPreview: string | ArrayBuffer | null = null;
   chnageProfile(event:Event){
     const file = (event.target as HTMLInputElement).files?.[0];
     this.isImgSelected = true;
@@ -79,8 +88,9 @@ export class ProfileComponent implements OnInit {
           console.log('back end stored image..',backEndResponse.message);
           this.isImgSelected = false;
           this.imgPreview = null;
-          this.authService.notifyProfileChnage();
-          this.ngOnInit();
+          this.authService.notifyProfileChnage();//for main component to fetch data
+          
+          // this.ngOnInit();
         },
         error:(err)=>{
           console.log('error storing in backend ',err.message);
@@ -130,6 +140,10 @@ export class ProfileComponent implements OnInit {
         this.isEmailChange = false;
       }
     })
+  }
+
+  logOut(){
+    this.songService.logOut();
   }
 }
 

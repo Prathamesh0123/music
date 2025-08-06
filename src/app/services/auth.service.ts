@@ -1,27 +1,28 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient ,HttpResponse } from '@angular/common/http';
+import { BehaviorSubject, Observable ,shareReplay,Subject,tap} from 'rxjs';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
   constructor(private http:HttpClient) { }
-
-  private profilePhotoChang = new BehaviorSubject<boolean>(false);
-  profileChanged$ = this.profilePhotoChang.asObservable();
+  private userData$ : Observable<any> | null = null;
+  // This is for notifying other components (like your sidebar) of changes.
+  private profileChangedSubject = new Subject<void>();
+  public profileChanged$ = this.profileChangedSubject.asObservable();
 
 
   checkSession(token:string){
 
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
-    return this.http.post(`http://localhost:3000/api/auth/checkSession`,{},{headers});
+
+    return this.http.post(`http://localhost:3000/api/auth/checkSession`,{});
   }
 
   notifyProfileChnage(){
-    this.profilePhotoChang.next(true);
+    this.userData$ = null;
+    this.profileChangedSubject.next();
   }
 
   signUpUser(data:any):Observable<any>{
@@ -35,40 +36,37 @@ export class AuthService {
 
   // for now just 
   getUserData(){
-    const token = localStorage.getItem('token');
-      if(!token){
-        console.log('No token found...');
-        return;
-      }
-      const headers = new  HttpHeaders({
-        Authorization: `Bearer ${token}`
-      });
-
-      return this.http.get('http://localhost:3000/api/auth/userData',{headers});
+    // don't need to this this will handled by interceptor 
+    // const token = localStorage.getItem('token');
+    //   if(!token){
+    //     console.log('No token found...');
+    //     return;
+    //   }
+    //   const headers = new  HttpHeaders({
+    //     Authorization: `Bearer ${token}`
+    //   });
+    //crurial part skiping api call if data alredy have 
+    if(!this.userData$){
+      this.userData$ =  this.http.get('http://localhost:3000/api/auth/userData').pipe(
+        tap(event =>{
+          if(event instanceof HttpResponse){
+            console.log('request made success ')
+          }
+        }),
+        shareReplay(1)
+      );
+    }
+      return this.userData$;
   }
 
   updateName(name:string){
-    const token = localStorage.getItem('token');
-      if(!token){
-        console.log('no token found');
-        return;
-      }
-      const headers = new HttpHeaders({
-        Authorization:`Bearer ${token}`
-      });
-      return this.http.put(`http://localhost:3000/api/auth/updatename`,{name},{headers});
+
+      return this.http.put(`http://localhost:3000/api/auth/updatename`,{name});
   }
 
   updateEmail(email:string){
-    const token = localStorage.getItem('token');
-    if(!token){
-      console.log('token missing');
-      return;
-    }
-    const headers = new HttpHeaders({
-      Authorization:`Bearer ${token}`
-    });
-    return this.http.put(`http://localhost:3000/api/auth/updatemail`,{email},{headers});
+
+    return this.http.put(`http://localhost:3000/api/auth/updatemail`,{email});
   }
 
   getUid(){

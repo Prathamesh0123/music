@@ -220,7 +220,7 @@ router.post('/delteFromPlaylist',authMiddleware,async(req,res)=>{
             return res.status(400).json({message:'Play list not found'});
         }
         // Get a reference to the playlist
-        const playList = user.playList[playListIndex];
+        const playList = user.playList[playlistIndex];
         const initialSongCount = playList.songs.length;
 
         // filter out song is to be deleted 
@@ -245,5 +245,37 @@ router.post('/delteFromPlaylist',authMiddleware,async(req,res)=>{
         res.status(500).json({ message: 'Internal server error' })
     }
 })
+
+router.get('/search',async(req,res)=>{
+    try{
+        const searchTerm = req.query.name;
+        console.log(searchTerm);
+        if(!searchTerm){
+            return res.json([]);
+        }
+
+        //query for atlas
+        const songs = await Song.aggregate([
+            {
+                $search:{
+                    "text":{
+                        "query": searchTerm,
+                        "path":["title","artist"],//the field to search,
+                        "fuzzy":{
+                        "maxEdits":1 // this allow 1 charachter typos!
+                        }
+                    }
+                }
+            },{
+                "$limit":20 //max return 20 stoping sending so much data for common word like love 
+            }
+        ]);
+        res.status(200).json(songs);
+    }catch(err){
+        console.log(err);
+        console.log(err.message);
+        res.status(500).json({message:'internal server issue'});
+    }
+});
 
 module.exports = router;

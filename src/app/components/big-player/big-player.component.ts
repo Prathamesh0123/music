@@ -5,6 +5,7 @@ import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 import { slideUpDownFade } from 'src/app/animations/animations';
 import { initFlowbite } from 'flowbite';
 import { Subject, takeUntil } from 'rxjs';
+import { NotificationService } from 'src/app/services/notification.service';
 @Component({
   selector: 'app-big-player',
   templateUrl: './big-player.component.html',
@@ -19,7 +20,6 @@ export class BigPlayerComponent implements OnInit,OnDestroy,AfterViewInit{
 
   currentVlolume:number = 0;
   duration:number = 0;
-  maxVolume:number = 100;
   currentTime:number = 0;
   url!:string;
 
@@ -28,7 +28,7 @@ export class BigPlayerComponent implements OnInit,OnDestroy,AfterViewInit{
   currentSongIndex!:number;
   songArray:MusicData [] = [];
   playlistName:string | null = '';
-  constructor(private songService:MusicFetchApiService,private router:Router){}
+  constructor(private songService:MusicFetchApiService,private router:Router,private snackBar:NotificationService){}
   ngAfterViewInit(): void {
       initFlowbite();
   }
@@ -38,7 +38,9 @@ export class BigPlayerComponent implements OnInit,OnDestroy,AfterViewInit{
       this.songArray = data;
       
     });
-    this.songService.playlistNameObs$.subscribe(data =>{
+    this.songService.playlistNameObs$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(data =>{
       this.playlistName = data;
       console.log(this.playlistName);
     })
@@ -154,5 +156,16 @@ deleteSong(currentSong:any){
   const playlistName = sessionStorage.getItem('playlistName');
   console.log(playlistName);
   console.log(currentSong.songId);
+  if(playlistName && currentSong.songId){
+    this.songService.deleteSongFromPlaylist(playlistName,currentSong.songId)?.subscribe({
+      next:(res:any)=>{
+        this.snackBar.showSuccess('Song Deleted!!!');
+        this.songArray = this.songArray.filter(s => s.url != currentSong.url);
+      },
+      error:(err)=>{
+        this.snackBar.showError(err.message);
+      }
+    })
+  }
 }
 }

@@ -1,5 +1,5 @@
     import { Injectable } from '@angular/core';
-    import { HttpClient, HttpHeaders } from '@angular/common/http';
+    import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
     import { filter, Observable, of } from 'rxjs';
     import { BehaviorSubject } from 'rxjs';
     import { MusicData } from '../models/music-data';
@@ -16,7 +16,6 @@
       //buttons behavior 
       isPlayingBehaviourSub = new BehaviorSubject<boolean>(false);
       isBackPrssed = new BehaviorSubject<boolean>(true);
-      loadAuidoBehaviorSub = new BehaviorSubject<string>('');
 
       //which song is to play behavior
       currentIndexBehaviorSub = new BehaviorSubject<number>(0);
@@ -37,34 +36,35 @@
       audio:HTMLAudioElement  = new Audio();
       currentSongInPlaylistBehavuiorSub = new BehaviorSubject<any>('');
       constructor(private http:HttpClient,private router:Router) { 
+        this.audio.volume = 0.5;
         this.loadSongsOnRefresh();
         this.audio.addEventListener('loadedmetadata',()=>{
           // this.duration = this.audio.duration;
           this.durationBehaviourSub.next(this.audio.duration);
 
-        })
+        });
 
         this.audio.addEventListener('timeupdate',()=>{
           // this.currentTime = this.audio.currentTime;
           this.currentTimeBehaviorSub.next(this.audio.currentTime);
-        })
+        });
 
         this.audio.addEventListener('ended',()=>{
           this.playNextSong();
-        })
+        });
         
 
-        this.currentIndexBehaviorSub
-          .pipe(
-            filter(index => !!this.musicData[index])
-          )
-          .subscribe(index => {
-            const song = this.musicData[index];
-            this.audio.src = song.url;
-            this.audio.load();
-            this.audio.play();
-            this.isPlayingBehaviourSub.next(true);
-        });
+      this.currentIndexBehaviorSub
+        .pipe(
+          filter(index => !!this.musicData[index])
+        )
+        .subscribe(index => {
+          const song = this.musicData[index];
+          this.audio.src = song.url;
+          this.audio.load();
+          this.audio.play();
+          this.isPlayingBehaviourSub.next(true);
+      });
 
       }
 
@@ -222,8 +222,24 @@
         }
       }
 
-      deleteSongFromPlaylist(){
+      deleteSongFromPlaylist(playListName:string,songId:string){
+        const token = localStorage.getItem('token');
+        if(!token){
+          console.log('Invalid token!!!');
+          return;
+        }
 
+        const headers = new HttpHeaders({
+          Authorization:`Bearer ${token}`
+        });
+
+        return this.http.post(`http://localhost:3000/api/song/delteFromPlaylist`,{playListName,songId},{headers});
+
+      }
+
+      fecthSong(term:string):Observable<any>{
+        const params  = new  HttpParams().set('name',term);
+        return this.http.get(`http://localhost:3000/api/song/search`,{ params });
       }
       
 
@@ -275,6 +291,41 @@
 
       getSongArray(){
         return this.musicData;
+      }
+
+      logOut() {
+        // --- STEP 1: Immediately stop all audio activity ---
+        this.audio.pause();
+        this.audio.src = '';
+        this.audio.load(); // Important to reset the audio element
+
+        // --- STEP 2: Destroy the data arrays. This is the most important fix. ---
+        // Now, any reactive code that checks this array will find it empty.
+        this.musicData = [];
+        this.songId = [];
+        this.generalQueueMusicData = [];
+        this.playlistQueueMusicData = [];
+
+        // --- STEP 3: Reset all state-holding BehaviorSubjects ---
+        // When currentIndexBehaviorSub.next(0) runs now, the filter in the
+        // constructor will fail because this.musicData[0] is undefined.
+        this.musicDataBehaviorSub.next([]);
+        this.isPlayingBehaviourSub.next(false);
+        this.durationBehaviourSub.next(0);
+        this.currentTimeBehaviorSub.next(0);
+        this.currentIndexBehaviorSub.next(0); // This is now safe to call
+        this.volumeSetBehaviorSub.next(this.audio.volume); // or 0 if you prefer
+        this.songMetaDataBehaviorSub.next(null);
+        this.currentPlaylistBehaviorSub.next(null);
+        this.curretSourceBehavoirSub.next('general');
+        this.currentSongInPlaylistBehavuiorSub.next('');
+
+        // --- STEP 4: Clear browser storage ---
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // --- STEP 5: Navigate away ---
+        this.router.navigate(['']); // Or your login route
       }
 
     }
