@@ -24,7 +24,7 @@
       //this observable disides which song mode is giong
       //either playlist or general based on that on refresh i fecth
       //that data and stored in my musicData dynamically 
-      curretSourceBehavoirSub = new BehaviorSubject<'general'|'playlist'>('general');
+      curretSourceBehavoirSub = new BehaviorSubject<'general'|'playlist'>('playlist');
       songId:string[] = [];
       musicData :MusicData[] = [];
       generalQueueMusicData:MusicData[] = [];
