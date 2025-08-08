@@ -90,7 +90,7 @@
       }
 
       getSong(searchQuery:string):Observable <any>{
-        const url = `http://localhost:3000/api/song/upload?search=${searchQuery}`;
+        const url = `https://music-azp3.onrender.com/api/song/upload?search=${searchQuery}`;
         return this.http.post<any>(url,{});
       }
 
@@ -100,7 +100,7 @@
         const savedIds = JSON.parse(sessionStorage.getItem('songIds') || '[]');
 
         if (Array.isArray(savedIds) && savedIds.length > 0) {
-          this.http.post<any>('http://localhost:3000/api/song/getGeneralSong', { ids: savedIds }).subscribe({
+          this.http.post<any>('https://music-azp3.onrender.com/api/song/getGeneralSong', { ids: savedIds }).subscribe({
             next: (data) => {
               const fetchedSongs = data.map((song: any) => ({
                 title: song.title,
@@ -133,7 +133,7 @@
           Authorization:`Bearer ${token}`
         });
         console.log('api stared');
-        this.http.post(`http://localhost:3000/api/song/getSinglePlayList`,{playListName},{headers}).subscribe({
+        this.http.post(`https://music-azp3.onrender.com/api/song/getSinglePlayList`,{playListName},{headers}).subscribe({
           next: (res:any) => {
               this.musicData = res.data;
 
@@ -173,7 +173,7 @@
       const headers = new HttpHeaders({
         Authorization:`Bearer ${token}`
       });
-      return this.http.post(`http://localhost:3000/api/song/addToPlaylist`,{playListName,newSong},{headers});
+      return this.http.post(`https://music-azp3.onrender.com/api/song/addToPlaylist`,{playListName,newSong},{headers});
     }
 
     getSongFromPlaylist(){
@@ -186,7 +186,7 @@
         Authorization:`Bearer ${token}`
       });
 
-      return this.http.get(`http://localhost:3000/api/song/getPlayListData`,{headers});
+      return this.http.get(`https://music-azp3.onrender.com/api/song/getPlayListData`,{headers});
     }
       // those parameters mater lot litrally lot 
       //specially url and songId when i get Data from current song
@@ -233,13 +233,13 @@
           Authorization:`Bearer ${token}`
         });
 
-        return this.http.post(`http://localhost:3000/api/song/delteFromPlaylist`,{playListName,songId},{headers});
+        return this.http.post(`https://music-azp3.onrender.com/api/song/delteFromPlaylist`,{playListName,songId},{headers});
 
       }
 
       fecthSong(term:string):Observable<any>{
         const params  = new  HttpParams().set('name',term);
-        return this.http.get(`http://localhost:3000/api/song/search`,{ params });
+        return this.http.get(`https://music-azp3.onrender.com/api/song/search`,{ params });
       }
       
 
