@@ -24,7 +24,7 @@
       //this observable disides which song mode is giong
       //either playlist or general based on that on refresh i fecth
       //that data and stored in my musicData dynamically 
-      curretSourceBehavoirSub = new BehaviorSubject<'general'|'playlist'>('playlist');
+      curretSourceBehavoirSub = new BehaviorSubject<'general'|'playlist'>('general');
       songId:string[] = [];
       musicData :MusicData[] = [];
       generalQueueMusicData:MusicData[] = [];
@@ -38,6 +38,7 @@
       constructor(private http:HttpClient,private router:Router) { 
         this.audio.volume = 0.5;
         this.loadSongsOnRefresh();
+        sessionStorage.setItem('songSource','general');
         this.audio.addEventListener('loadedmetadata',()=>{
           // this.duration = this.audio.duration;
           this.durationBehaviourSub.next(this.audio.duration);
