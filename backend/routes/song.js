@@ -8,7 +8,6 @@ const authMiddleware = require('../config/authMidelware');
 const router = express.Router();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const User = require('../models/User');
-const { ConditionalExpr } = require('@angular/compiler');
 router.post('/upload', async (req, res) => {
     const { search } = req.query;
     if (!search) return res.status(400).json({ message: 'Song name required' });
