@@ -3,8 +3,7 @@ import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 import { Router } from '@angular/router';
 import { fadeIn } from 'src/app/animations/animations';
 import { NotificationService } from 'src/app/services/notification.service';
-import { debounce, debounceTime, distinctUntilChanged, Observable, Subject, switchMap } from 'rxjs';
-import { formatDate } from '@angular/common';
+import { debounceTime, distinctUntilChanged, Observable, Subject, switchMap } from 'rxjs';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -20,12 +19,12 @@ showLoader:boolean = false;
 
   ngOnInit():void{
     this.songs$ = this.searchTerm.pipe(
-      // wait for 300ms for slience 
+      //1 wait for 300ms for slience 
       debounceTime(300),
 
-      // dont make request if text same as last 
+      //2 dont make request if text same as last 
       distinctUntilChanged(),
-      // call the api using switch map cancle previous pendding request 
+      //3 call the api using switch map cancle previous pendding request 
       switchMap((term:string)=> this.musicApi.fecthSong(term))
 
     )
@@ -58,6 +57,9 @@ showLoader:boolean = false;
 
   }
 
+  //run on every search binded with (input)
+  //and used tamplate refrence variable to
+  //extract value pass tamplateVarName.value as parameter
   getSong(text:string){
       this.searchTerm.next(text);
   }
