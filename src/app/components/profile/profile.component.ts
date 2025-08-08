@@ -88,8 +88,7 @@ export class ProfileComponent implements OnInit {
           console.log('back end stored image..',backEndResponse.message);
           this.isImgSelected = false;
           this.imgPreview = null;
-          this.authService.notifyProfileChnage();//for main component to fetch data
-          
+          this.authService.notifyProfileChnage();
           // this.ngOnInit();
         },
         error:(err)=>{

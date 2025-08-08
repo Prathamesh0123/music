@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { fadeIn } from 'src/app/animations/animations';
 import { NotificationService } from 'src/app/services/notification.service';
 import { debounceTime, distinctUntilChanged, Observable, Subject, switchMap } from 'rxjs';
+import { AuthService } from 'src/app/services/auth.service';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -11,7 +12,7 @@ import { debounceTime, distinctUntilChanged, Observable, Subject, switchMap } fr
   animations:[fadeIn],
 })
 export class HomeComponent implements OnInit {
-  constructor(private musicApi:MusicFetchApiService,private router:Router,private snackBar:NotificationService){}
+  constructor(private musicApi:MusicFetchApiService,private router:Router,private snackBar:NotificationService,private authService:AuthService){}
   songName:string = '';
   songs$!:Observable<any>;
   private searchTerm = new Subject<string>();
@@ -28,6 +29,8 @@ showLoader:boolean = false;
       switchMap((term:string)=> this.musicApi.fecthSong(term))
 
     )
+    this.authService.notifyProfileChnage();//put this in home component ngAfterdestroy 
+    
   }
 
   fetchSong(){
@@ -42,7 +45,7 @@ showLoader:boolean = false;
               title:response.title,
               url:response.audioUrl,
               songId:response.videoId
-            });
+            },'general');
           this.showLoader = false;
           this.router.navigate(['/musicPlayer']);
         },
@@ -65,6 +68,7 @@ showLoader:boolean = false;
   }
 
   playSong(song:any){
+ 
     const fomatedData = {
       thumbnail:song.thumbnail,
       artist:song.artist,
@@ -72,8 +76,8 @@ showLoader:boolean = false;
       url:song.audioUrl,
       songId:song.videoId
     }
-    this.musicApi.setSongData(fomatedData);
-    this.snackBar.showSuccess('✅ Song added in Queue')
+    this.musicApi.setSongData(fomatedData,'general');
+    this.snackBar.showSuccess('✅ Song added in Queue');
     this.router.navigate(['/musicPlayer']); 
   }
 }

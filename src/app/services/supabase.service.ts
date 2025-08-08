@@ -27,7 +27,7 @@ export class SupabaseService {
     const headers = new HttpHeaders({
       Authorization: `Bearer ${token}`
     })
-    return this.http.post('https://music-azp3.onrender.com/api/auth/uploadImage',{imageUrl},{headers});
+    return this.http.post('http://localhost:3000/api/auth/uploadImage',{imageUrl},{headers});
    }
 
   updateImage(path: string,file:any) {
