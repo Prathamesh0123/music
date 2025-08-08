@@ -17,7 +17,7 @@ export class AuthService {
   checkSession(token:string){
 
 
-    return this.http.post(`http://localhost:3000/api/auth/checkSession`,{});
+    return this.http.post(`https://music-azp3.onrender.com/api/auth/checkSession`,{});
   }
 
   notifyProfileChnage(){
@@ -26,11 +26,11 @@ export class AuthService {
   }
 
   signUpUser(data:any):Observable<any>{
-    return this.http.post('http://localhost:3000/api/auth/register',data);
+    return this.http.post('https://music-azp3.onrender.com/api/auth/register',data);
   }
 
   logInUser(data:{email:string,password:string}){
-    return this.http.post('http://localhost:3000/api/auth/login',data);
+    return this.http.post('https://music-azp3.onrender.com/api/auth/login',data);
   }
 
 
@@ -47,7 +47,7 @@ export class AuthService {
     //   });
     //crurial part skiping api call if data alredy have 
     if(!this.userData$){
-      this.userData$ =  this.http.get('http://localhost:3000/api/auth/userData').pipe(
+      this.userData$ =  this.http.get('https://music-azp3.onrender.com/api/auth/userData').pipe(
         tap(event =>{
           if(event instanceof HttpResponse){
             console.log('request made success ')
@@ -61,12 +61,12 @@ export class AuthService {
 
   updateName(name:string){
 
-      return this.http.put(`http://localhost:3000/api/auth/updatename`,{name});
+      return this.http.put(`https://music-azp3.onrender.com/api/auth/updatename`,{name});
   }
 
   updateEmail(email:string){
 
-    return this.http.put(`http://localhost:3000/api/auth/updatemail`,{email});
+    return this.http.put(`https://music-azp3.onrender.com/api/auth/updatemail`,{email});
   }
 
   getUid(){
