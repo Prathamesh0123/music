@@ -8,6 +8,8 @@ const authMiddleware = require('../config/authMidelware');
 const router = express.Router();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const User = require('../models/User');
+
+
 router.post('/upload', async (req, res) => {
     const { search } = req.query;
     if (!search) return res.status(400).json({ message: 'Song name required' });
@@ -91,10 +93,13 @@ router.post('/upload', async (req, res) => {
         res.status(200).json(savedSong);
 
     } catch (err) {
-        console.error('❌ Full error:', err); // full details in Render logs
+        if(err.statusCode == 429 || err?.response?.status == 429){
+            console.error('🚫 Rate limit hit: 429 Too Many Requests',err);
+
+        }
+        // console.error('❌ Full error:', err); // full details in Render logs
         res.status(500).json({
             message: err.message || 'Something went wrong',
-            stack: err.stack,              // optional, more debug info
             details: err?.response || err  // pass original details
         });
     }
