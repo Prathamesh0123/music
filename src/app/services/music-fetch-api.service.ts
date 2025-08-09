@@ -91,7 +91,7 @@
       }
 
       getSong(searchQuery:string):Observable <any>{
-        const url = `http://localhost:3000/api/song/upload?search=${searchQuery}`;
+        const url = `https://music-azp3.onrender.com/api/song/upload?search=${searchQuery}`;
         return this.http.post<any>(url,{});
       }
 
