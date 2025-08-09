@@ -34,7 +34,7 @@ export class AuthIntercepter implements HttpInterceptor{
                         console.log(err.message);
                     }
                     if(err.status == 500){
-                        console.log(err.message);
+                        console.log(err);
                     }
                 }
                 return throwError(() => err);

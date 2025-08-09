@@ -50,7 +50,9 @@ showLoader:boolean = false;
           this.router.navigate(['/musicPlayer']);
         },
         error:(err)=>{
-          console.log(`errro ${err.message} - ${err.error}`);
+            console.log('Error status:', err.status);
+            console.log('Error message:', err.error?.message || err.message);
+            console.log('Error details:', err.error?.details || err.error);
         }
       })
     }else{

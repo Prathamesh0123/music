@@ -91,8 +91,12 @@ router.post('/upload', async (req, res) => {
         res.status(200).json(savedSong);
 
     } catch (err) {
-        console.error('❌ Error:', err);
-        res.status(500).json({ message: 'Something went wrong', error: err });
+        console.error('❌ Full error:', err); // full details in Render logs
+        res.status(500).json({
+            message: err.message || 'Something went wrong',
+            stack: err.stack,              // optional, more debug info
+            details: err?.response || err  // pass original details
+        });
     }
 });
 
