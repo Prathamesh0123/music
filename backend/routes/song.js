@@ -10,6 +10,47 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY
 const User = require('../models/User');
 
 
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function downloadAudioWithRetry(videoUrl, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const chunks = [];
+            const memoryStream = new Writable({
+                write(chunk, encoding, callback) {
+                    chunks.push(chunk);
+                    callback();
+                }
+            });
+
+            const audioStream = ytdl(videoUrl, {
+                filter: 'audioonly',
+                quality: 'highestaudio',
+                highWaterMark: 1 << 25
+            });
+
+            audioStream.pipe(memoryStream);
+
+            await new Promise((resolve, reject) => {
+                audioStream.on('end', resolve);
+                audioStream.on('error', reject);
+            });
+
+            return Buffer.concat(chunks); // ✅ Success
+        } catch (err) {
+            if (err.statusCode === 429 && i < retries - 1) {
+                console.log(`⚠ Rate limit hit, retrying in 5s... Attempt ${i + 1}`);
+                await delay(5000);
+            } else {
+                throw err;
+            }
+        }
+    }
+}
+
+
 router.post('/upload', async (req, res) => {
     const { search } = req.query;
     if (!search) return res.status(400).json({ message: 'Song name required' });
@@ -40,28 +81,29 @@ router.post('/upload', async (req, res) => {
 
         // ✅ STEP 3: Download audio using ytdl-core into memory
         console.log('🎧 Downloading and processing song stream...');
-        const chunks = [];
-        const memoryStream = new Writable({
-            write(chunk, encoding, callback) {
-                chunks.push(chunk);
-                callback();
-            }
-        });
+        // const chunks = [];
+        // const memoryStream = new Writable({
+        //     write(chunk, encoding, callback) {
+        //         chunks.push(chunk);
+        //         callback();
+        //     }
+        // });
 
-        const audioStream = ytdl(videoUrl, {
-            filter: 'audioonly',
-            quality: 'highestaudio',
-            highWaterMark: 1 << 25 // prevent memory issues
-        });
+        // const audioStream = ytdl(videoUrl, {
+        //     filter: 'audioonly',
+        //     quality: 'highestaudio',
+        //     highWaterMark: 1 << 25 // prevent memory issues
+        // });
 
-        audioStream.pipe(memoryStream);
+        // audioStream.pipe(memoryStream);
 
-        await new Promise((resolve, reject) => {
-            audioStream.on('end', resolve);
-            audioStream.on('error', reject);
-        });
+        // await new Promise((resolve, reject) => {
+        //     audioStream.on('end', resolve);
+        //     audioStream.on('error', reject);
+        // });
 
-        const audioBuffer = Buffer.concat(chunks);
+        // const audioBuffer = Buffer.concat(chunks);
+        const audioBuffer = await downloadAudioWithRetry(videoUrl);
 
         // ✅ STEP 4: Upload to Supabase
         console.log('☁️ Uploading audio to Supabase Storage...');
