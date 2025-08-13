@@ -1,20 +1,32 @@
 const express = require('express');
 const ytdl = require('@distube/ytdl-core');
 const ytSearch = require('yt-search');
-const querystring = require('querystring');
 const { exec } = require("child_process");
 const util = require("util");
 // const fetch = require("node-fetch");
-const execPromise = util.promisify(exec);
 const ytdlp = require("yt-dlp-exec");
+const path = require('path');
 
+// ... inside your /upload route ...
+const cookiesPath = path.join(__dirname, '..', 'cookie.text');
 const Song = require('../models/songs');
 const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../config/authMidelware');
 const router = express.Router();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const User = require('../models/User');
-
+const webshareProxies = [
+    { host: "23.95.150.145", port: 6114, username: "klsrvszm", password: "nzpi2ch2z46k" },
+    { host: "45.38.107.97", port: 6014, username: "klsrvszm", password: "nzpi2ch2z46k" },
+    { host: "64.137.96.74", port: 6641, username: "klsrvszm", password: "nzpi2ch2z46k" },
+    { host: "104.222.161.211", port: 6343, username: "klsrvszm", password: "nzpi2ch2z46k" },
+    { host: "107.172.163.27", port: 6543, username: "klsrvszm", password: "nzpi2ch2z46k" },
+    { host: "136.0.207.84", port: 6661, username: "klsrvszm", password: "nzpi2ch2z46k" },
+    { host: "142.147.128.93", port: 5593, username: "klsrvszm", password: "nzpi2ch2z46k" },
+    { host: "198.23.239.134", port: 6540, username: "klsrvszm", password: "nzpi2ch2z46k" },
+    { host: "207.244.217.165", port: 6712, username: "klsrvszm", password: "nzpi2ch2z46k" },
+    // Add the 10th proxy from your list here if you wish
+];
 router.post("/upload", async (req, res) => {
   try {
     const { search } = req.query;
@@ -46,14 +58,41 @@ router.post("/upload", async (req, res) => {
     }
 
     // Get direct audio stream URL via yt-dlp
-    console.log("📥 Fetching audio URL with yt-dlp...");
-    const audioStreamUrl = (
-    await ytdlp(`https://www.youtube.com/watch?v=${videoId}`, {
-        f: "bestaudio",
-        g: true
-    })
-    ).trim();
+    const randomProxy = webshareProxies[Math.floor(Math.random() * webshareProxies.length)];
+    const proxyUrl = `http://${randomProxy.username}:${randomProxy.password}@${randomProxy.host}:${randomProxy.port}`;
 
+    console.log(`🔄 Using proxy: ${randomProxy.host}:${randomProxy.port}`);
+
+    // 3. Get direct audio stream URL via yt-dlp, passing the proxy URL in the options
+    console.log("📥 Fetching audio URL with yt-dlp via proxy...");
+    
+    // The first argument is now the direct YouTube URL, NOT the worker URL
+    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+    const audioStreamUrl = (
+      await ytdlp(youtubeUrl, {
+        f: "bestaudio",
+        g: true,
+        // This is the crucial part: tell yt-dlp to use your proxy
+        proxy: proxyUrl, 
+        cookies:cookiesPath
+      })
+    ).trim();
+    // console.log("📥 Fetching audio URL with yt-dlp...");
+    // const workerUrl = `https://cloudflare-proxy.prathmeshbatane4.workers.dev?url=${encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`)}`
+    // console.log(workerUrl);
+    // const audioStreamUrl = (
+    // // await ytdlp(`https://www.youtube.com/watch?v=${videoId}`, {
+    // //     f: "bestaudio",
+    // //     g: true
+    // // })
+    // // ).trim();
+    // // console.log(workerUrl)
+    // await ytdlp(workerUrl, {
+    //     f: "bestaudio",
+    //     g: true
+    // })
+    // ).trim();
 
     // Download audio to buffer
     const audioRes = await fetch(audioStreamUrl);

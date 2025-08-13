@@ -4,3 +4,6 @@ npm-debug.log
 yarn-error.log
 
 /songs
+# Ignore the secret cookie file
+cookie.txt
+cookie.text
