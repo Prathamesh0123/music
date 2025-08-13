@@ -34,114 +34,113 @@ router.post("/upload", async (req, res) => {
       return res.status(400).json({ error: "Song name required" });
     }
 
+    // ... Search logic is correct and remains the same ...
     console.log(`🔍 Searching YouTube for: "${search}"`);
     const searchResult = await ytSearch(search);
-
     if (!searchResult.videos.length) {
       return res.status(404).json({ error: "No results found" });
     }
-
     const video = searchResult.videos[0];
     const videoId = video.videoId;
-    let shortTitle = video.title.length > 50 
-    ? video.title.slice(0, 50) + "..." 
-    : video.title;
-
+    let shortTitle = video.title.length > 50 ? `${video.title.slice(0, 50)}...` : video.title;
     console.log(`🎵 Found: ${shortTitle} (${video.videoId})`);
-    // console.log(`🎯 Found: ${video.title} (${videoId})`);
 
-    // Check if already exists in Mongo
     const existingSong = await Song.findOne({ videoId });
     if (existingSong) {
       console.log("✅ Song already exists in DB");
       return res.status(200).json(existingSong);
     }
-
-    // Get direct audio stream URL via yt-dlp
+    
+    // --- START: Correct Stream Processing Logic ---
     const randomProxy = webshareProxies[Math.floor(Math.random() * webshareProxies.length)];
     const proxyUrl = `http://${randomProxy.username}:${randomProxy.password}@${randomProxy.host}:${randomProxy.port}`;
-
-    console.log(`🔄 Using proxy: ${randomProxy.host}:${randomProxy.port}`);
-
-    // 3. Get direct audio stream URL via yt-dlp, passing the proxy URL in the options
-    console.log("📥 Fetching audio URL with yt-dlp via proxy...");
-    
-    // The first argument is now the direct YouTube URL, NOT the worker URL
     const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    
+    console.log(`🔄 Using proxy: ${randomProxy.host}:${randomProxy.port}`);
+    console.log("📥 Initiating audio stream with yt-dlp...");
 
-    const audioStreamUrl = (
-      await ytdlp(youtubeUrl, {
-        f: "bestaudio",
-        g: true,
-        // This is the crucial part: tell yt-dlp to use your proxy
-        proxy: proxyUrl, 
-        cookies:cookiesPath
-      })
-    ).trim();
-    // console.log("📥 Fetching audio URL with yt-dlp...");
-    // const workerUrl = `https://cloudflare-proxy.prathmeshbatane4.workers.dev?url=${encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`)}`
-    // console.log(workerUrl);
-    // const audioStreamUrl = (
-    // // await ytdlp(`https://www.youtube.com/watch?v=${videoId}`, {
-    // //     f: "bestaudio",
-    // //     g: true
-    // // })
-    // // ).trim();
-    // // console.log(workerUrl)
-    // await ytdlp(workerUrl, {
-    //     f: "bestaudio",
-    //     g: true
-    // })
-    // ).trim();
-
-    // Download audio to buffer
-    const audioRes = await fetch(audioStreamUrl);
-    const audioBuffer = Buffer.from(await audioRes.arrayBuffer());
-
-    if (audioBuffer.length === 0) {
-      throw new Error("Download failed, buffer is empty.");
-    }
-
-    console.log(`☁️ Audio buffer created (${(audioBuffer.length / 1024 / 1024).toFixed(2)} MB). Uploading to Supabase...`);
-
-    // Upload to Supabase
-    const fileName = `${videoId}.mp3`;
-    const { error: uploadError } = await supabase.storage
-      .from(process.env.SUPABASE_BUCKET)
-      .upload(fileName, audioBuffer, {
-        contentType: "audio/mpeg",
-        upsert: true,
-      });
-
-    if (uploadError) {
-      throw new Error(`Supabase upload failed: ${uploadError.message}`);
-    }
-
-    // Get public URL
-    const { data: publicUrlData } = supabase.storage
-      .from(process.env.SUPABASE_BUCKET)
-      .getPublicUrl(fileName);
-    const publicAudioUrl = publicUrlData.publicUrl;
-
-    // Save to MongoDB
-    const newSong = await Song.create({
-      title: shortTitle,
-      artist: video.author.name,
-      thumbnail: video.thumbnail,
-      videoId,
-      audioUrl: publicAudioUrl,
+    // 1. Initiate the download process. This returns an EventEmitter, not a Buffer.
+    const ytdlpProcess = ytdlp.exec(youtubeUrl, {
+        proxy: proxyUrl,
+        cookies: cookiesPath,
+        format: "bestaudio",
+        output: "-",
     });
 
-    console.log("💾 Song saved to MongoDB!");
-    res.status(201).json(newSong);
+    // 2. Create an array to hold the audio data chunks.
+    const chunks = [];
+
+    // 3. Listen for 'data' events on the process's standard output stream.
+    ytdlpProcess.stdout.on('data', (data) => {
+        chunks.push(data);
+    });
+
+    // Listen for any errors from the process itself.
+    ytdlpProcess.on('error', (error) => {
+        console.error("❌ Error executing yt-dlp process:", error);
+        if (!res.headersSent) {
+            res.status(500).json({ error: "Failed to start download process." });
+        }
+    });
+
+    // 4. When the stream ends, all chunks have been received.
+    ytdlpProcess.stdout.on('end', async () => {
+        try {
+            // 5. Concatenate all chunks into a single, complete Buffer.
+            const audioBuffer = Buffer.concat(chunks);
+
+            if (audioBuffer.length === 0) {
+                throw new Error("Download failed, buffer is empty.");
+            }
+
+            console.log(`☁️ Buffer created from stream (${(audioBuffer.length / 1024 / 1024).toFixed(2)} MB). Uploading to Supabase...`);
+
+            // --- The rest of your upload/save logic is correct ---
+            const fileName = `${videoId}.mp3`;
+            const { error: uploadError } = await supabase.storage
+              .from(process.env.SUPABASE_BUCKET)
+              .upload(fileName, audioBuffer, {
+                contentType: "audio/mpeg",
+                upsert: true,
+              });
+
+            if (uploadError) {
+              throw new Error(`Supabase upload failed: ${uploadError.message}`);
+            }
+
+            const { data: publicUrlData } = supabase.storage
+              .from(process.env.SUPABASE_BUCKET)
+              .getPublicUrl(fileName);
+            const publicAudioUrl = publicUrlData.publicUrl;
+
+            const newSong = await Song.create({
+              title: shortTitle,
+              artist: video.author.name,
+              thumbnail: video.thumbnail,
+              videoId,
+              audioUrl: publicAudioUrl,
+            });
+
+            console.log("💾 Song saved to MongoDB!");
+            if (!res.headersSent) {
+                res.status(201).json(newSong);
+            }
+        } catch (err) {
+            console.error("❌ Error processing stream or uploading:", err);
+            if (!res.headersSent) {
+                res.status(500).json({ error: err.message });
+            }
+        }
+    });
+    // --- END: Correct Stream Processing Logic ---
 
   } catch (err) {
     console.error("❌ Error in /upload route:", err);
-    res.status(500).json({ error: err.message });
+    if (!res.headersSent) {
+        res.status(500).json({ error: err.message });
+    }
   }
 });
-
-
 
 
 router.post('/getGeneralSong',async(req,res)=>{
