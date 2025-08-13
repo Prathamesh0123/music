@@ -1,7 +1,13 @@
 const express = require('express');
 const ytdl = require('@distube/ytdl-core');
 const ytSearch = require('yt-search');
-const { Writable } = require('stream');
+const querystring = require('querystring');
+const { exec } = require("child_process");
+const util = require("util");
+// const fetch = require("node-fetch");
+const execPromise = util.promisify(exec);
+const ytdlp = require("yt-dlp-exec");
+
 const Song = require('../models/songs');
 const { createClient } = require('@supabase/supabase-js');
 const authMiddleware = require('../config/authMidelware');
@@ -9,143 +15,94 @@ const router = express.Router();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const User = require('../models/User');
 
-
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function downloadAudioWithRetry(videoUrl, retries = 3) {
-    for (let i = 0; i < retries; i++) {
-        try {
-            const chunks = [];
-            const memoryStream = new Writable({
-                write(chunk, encoding, callback) {
-                    chunks.push(chunk);
-                    callback();
-                }
-            });
-
-            const audioStream = ytdl(videoUrl, {
-                filter: 'audioonly',
-                quality: 'highestaudio',
-                highWaterMark: 1 << 25
-            });
-
-            audioStream.pipe(memoryStream);
-
-            await new Promise((resolve, reject) => {
-                audioStream.on('end', resolve);
-                audioStream.on('error', reject);
-            });
-
-            return Buffer.concat(chunks); // ✅ Success
-        } catch (err) {
-            if (err.statusCode === 429 && i < retries - 1) {
-                console.log(`⚠ Rate limit hit, retrying in 5s... Attempt ${i + 1}`);
-                await delay(5000);
-            } else {
-                throw err;
-            }
-        }
-    }
-}
-
-
-router.post('/upload', async (req, res) => {
+router.post("/upload", async (req, res) => {
+  try {
     const { search } = req.query;
-    if (!search) return res.status(400).json({ message: 'Song name required' });
-
-    try {
-        // ✅ STEP 1: Search YouTube using yt-search
-        console.log('🔍 Searching song metadata on YouTube...');
-        const searchResult = await ytSearch(search);
-        const songInfo = searchResult.videos[0];
-        if (!songInfo) return res.status(404).json({ message: 'No song found' });
-
-        const { title, author: { name: artist }, image: thumbnail, videoId } = songInfo;
-        const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-        const safeTitle = title.replace(/[^a-zA-Z0-9 \-\[\]\u0A80-\uFFFF]/g, '').substring(0, 50).trim();
-        console.log(safeTitle);
-        //step 1.5 retun alredy existing song no need to download again
-        const existingSong = await Song.findOne({title:safeTitle,artist});
-
-        if(existingSong && existingSong.audioUrl){
-            console.log('song Alredy exist');
-            return res.status(200).json(existingSong);
-        }
-        // ✅ STEP 2: Save metadata to MongoDB
-        console.log('📝 Saving title, artist, and thumbnail in MongoDB...');
-        const newSong = new Song({ title:safeTitle, artist, thumbnail ,videoId});
-        console.log(newSong);
-        const savedSong = await newSong.save();
-
-        // ✅ STEP 3: Download audio using ytdl-core into memory
-        console.log('🎧 Downloading and processing song stream...');
-        // const chunks = [];
-        // const memoryStream = new Writable({
-        //     write(chunk, encoding, callback) {
-        //         chunks.push(chunk);
-        //         callback();
-        //     }
-        // });
-
-        // const audioStream = ytdl(videoUrl, {
-        //     filter: 'audioonly',
-        //     quality: 'highestaudio',
-        //     highWaterMark: 1 << 25 // prevent memory issues
-        // });
-
-        // audioStream.pipe(memoryStream);
-
-        // await new Promise((resolve, reject) => {
-        //     audioStream.on('end', resolve);
-        //     audioStream.on('error', reject);
-        // });
-
-        // const audioBuffer = Buffer.concat(chunks);
-        const audioBuffer = await downloadAudioWithRetry(videoUrl);
-
-        // ✅ STEP 4: Upload to Supabase
-        console.log('☁️ Uploading audio to Supabase Storage...');
-        const fileName = `${safeTitle}-${Date.now()}.mp3`;
-
-        const { data, error } = await supabase
-            .storage
-            .from(process.env.SUPABASE_BUCKET)
-            .upload(fileName, audioBuffer, {
-                contentType: 'audio/mpeg'
-            });
-
-        if (error) return res.status(500).json({ message: 'Upload failed', error });
-
-        // ✅ STEP 5: Get public URL
-        console.log('🔗 Getting public link from Supabase...');
-        const { data: publicUrlData } = supabase
-            .storage
-            .from(process.env.SUPABASE_BUCKET)
-            .getPublicUrl(fileName);
-
-        const audioUrl = publicUrlData.publicUrl;
-
-        // ✅ STEP 6: Update DB with URL
-        console.log('✅ Saving public link in MongoDB...');
-        savedSong.audioUrl = audioUrl;
-        await savedSong.save();
-        console.log('✅ Done');
-        res.status(200).json(savedSong);
-
-    } catch (err) {
-        if(err.statusCode == 429 || err?.response?.status == 429){
-            console.error('🚫 Rate limit hit: 429 Too Many Requests',err);
-
-        }
-        // console.error('❌ Full error:', err); // full details in Render logs
-        res.status(500).json({
-            message: err.message || 'Something went wrong',
-            details: err?.response || err  // pass original details
-        });
+    if (!search) {
+      return res.status(400).json({ error: "Song name required" });
     }
+
+    console.log(`🔍 Searching YouTube for: "${search}"`);
+    const searchResult = await ytSearch(search);
+
+    if (!searchResult.videos.length) {
+      return res.status(404).json({ error: "No results found" });
+    }
+
+    const video = searchResult.videos[0];
+    const videoId = video.videoId;
+    let shortTitle = video.title.length > 50 
+    ? video.title.slice(0, 50) + "..." 
+    : video.title;
+
+    console.log(`🎵 Found: ${shortTitle} (${video.videoId})`);
+    // console.log(`🎯 Found: ${video.title} (${videoId})`);
+
+    // Check if already exists in Mongo
+    const existingSong = await Song.findOne({ videoId });
+    if (existingSong) {
+      console.log("✅ Song already exists in DB");
+      return res.status(200).json(existingSong);
+    }
+
+    // Get direct audio stream URL via yt-dlp
+    console.log("📥 Fetching audio URL with yt-dlp...");
+    const audioStreamUrl = (
+    await ytdlp(`https://www.youtube.com/watch?v=${videoId}`, {
+        f: "bestaudio",
+        g: true
+    })
+    ).trim();
+
+
+    // Download audio to buffer
+    const audioRes = await fetch(audioStreamUrl);
+    const audioBuffer = Buffer.from(await audioRes.arrayBuffer());
+
+    if (audioBuffer.length === 0) {
+      throw new Error("Download failed, buffer is empty.");
+    }
+
+    console.log(`☁️ Audio buffer created (${(audioBuffer.length / 1024 / 1024).toFixed(2)} MB). Uploading to Supabase...`);
+
+    // Upload to Supabase
+    const fileName = `${videoId}.mp3`;
+    const { error: uploadError } = await supabase.storage
+      .from(process.env.SUPABASE_BUCKET)
+      .upload(fileName, audioBuffer, {
+        contentType: "audio/mpeg",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw new Error(`Supabase upload failed: ${uploadError.message}`);
+    }
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from(process.env.SUPABASE_BUCKET)
+      .getPublicUrl(fileName);
+    const publicAudioUrl = publicUrlData.publicUrl;
+
+    // Save to MongoDB
+    const newSong = await Song.create({
+      title: shortTitle,
+      artist: video.author.name,
+      thumbnail: video.thumbnail,
+      videoId,
+      audioUrl: publicAudioUrl,
+    });
+
+    console.log("💾 Song saved to MongoDB!");
+    res.status(201).json(newSong);
+
+  } catch (err) {
+    console.error("❌ Error in /upload route:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
+
+
 
 
 router.post('/getGeneralSong',async(req,res)=>{
