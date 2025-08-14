@@ -3,7 +3,7 @@ import { MusicFetchApiService } from 'src/app/services/music-fetch-api.service';
 import { Router } from '@angular/router';
 import { fadeIn } from 'src/app/animations/animations';
 import { NotificationService } from 'src/app/services/notification.service';
-import { debounceTime, distinctUntilChanged, Observable, Subject, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Observable, Subject, switchMap , of} from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
 @Component({
   selector: 'app-home',
@@ -16,7 +16,7 @@ export class HomeComponent implements OnInit {
   songName:string = '';
   songs$!:Observable<any>;
   private searchTerm = new Subject<string>();
-showLoader:boolean = false;
+  showLoader:boolean = false;
 
   ngOnInit():void{
     this.songs$ = this.searchTerm.pipe(
@@ -26,7 +26,15 @@ showLoader:boolean = false;
       //2 dont make request if text same as last 
       distinctUntilChanged(),
       //3 call the api using switch map cancle previous pendding request 
-      switchMap((term:string)=> this.musicApi.fecthSong(term))
+      switchMap((term:string) => {
+        // If the search term is empty, return an observable of an empty array.
+        // This will effectively clear the suggestions list in the template.
+        if (!term.trim()) {
+          return of([]);
+        }
+        // Otherwise, proceed with the API call to fetch suggestions.
+        return this.musicApi.fecthSong(term);
+      })
 
     )
     this.authService.notifyProfileChnage();//put this in home component ngAfterdestroy 
@@ -34,6 +42,7 @@ showLoader:boolean = false;
   }
 
   fetchSong(){
+    this.searchTerm.next('');
     if(this.songName){
       this.showLoader = true;
       this.musicApi.getSong(this.songName).subscribe({
