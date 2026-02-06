@@ -57,93 +57,128 @@ router.post("/upload", async (req, res) => {
             return res.status(200).json(existingSong);
         }
 
-        // --- START: Correct Stream Processing Logic ---
-        const randomProxy = webshareProxies[Math.floor(Math.random() * webshareProxies.length)];
-        const proxyUrl = `http://${randomProxy.username}:${randomProxy.password}@${randomProxy.host}:${randomProxy.port}`;
-        const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        // --- START: Refactored Stream Processing Logic with Retry ---
+        let success = false;
+        const maxAttempts = Math.min(webshareProxies.length, 5); // Try up to 5 proxies
+        let attempts = 0;
 
-        console.log(`🔄 Using proxy: ${randomProxy.host}:${randomProxy.port}`);
-        console.log("📥 Initiating audio stream with yt-dlp...");
+        const attemptDownload = async (pIndex) => {
+            return new Promise(async (resolve, reject) => {
+                attempts++;
+                let currentProxy = null;
+                let currentProxyUrl = null;
 
-        // 1. Initiate the download process. This returns an EventEmitter, not a Buffer.
-        const ytdlpProcess = ytdlp.exec(youtubeUrl, {
-            proxy: proxyUrl,
-            cookies: cookiesPath,
-            format: "bestaudio",
-            output: "-",
-            verbose: true,
-        });
-
-        // 2. Create an array to hold the audio data chunks.
-        const chunks = [];
-
-        // 3. Listen for 'data' events on the process's standard output stream.
-        ytdlpProcess.stdout.on('data', (data) => {
-            chunks.push(data);
-        });
-
-        ytdlpProcess.stderr.on('data', (data) => {
-            console.error(`📥 yt-dlp stderr: ${data.toString()}`);
-        });
-
-        // Listen for any errors from the process itself.
-        ytdlpProcess.on('error', (error) => {
-            console.error("❌ Error executing yt-dlp process:", error);
-            if (!res.headersSent) {
-                res.status(500).json({ error: "Failed to start download process." });
-            }
-        });
-
-        // 4. When the stream ends, all chunks have been received.
-        ytdlpProcess.stdout.on('end', async () => {
-            try {
-                // 5. Concatenate all chunks into a single, complete Buffer.
-                const audioBuffer = Buffer.concat(chunks);
-
-                if (audioBuffer.length === 0) {
-                    throw new Error("Download failed, buffer is empty.");
+                if (pIndex === -2) {
+                    console.log("🔄 Attempting download WITHOUT proxy...");
+                } else {
+                    currentProxy = webshareProxies[pIndex % webshareProxies.length];
+                    currentProxyUrl = `http://${currentProxy.username}:${currentProxy.password}@${currentProxy.host}:${currentProxy.port}`;
+                    console.log(`🔄 Attempt ${attempts}: Using proxy ${currentProxy.host}:${currentProxy.port}`);
                 }
 
-                console.log(`☁️ Buffer created from stream (${(audioBuffer.length / 1024 / 1024).toFixed(2)} MB). Uploading to Supabase...`);
-
-                // --- The rest of your upload/save logic is correct ---
-                const fileName = `${videoId}.mp3`;
-                const { error: uploadError } = await supabase.storage
-                    .from(process.env.SUPABASE_BUCKET)
-                    .upload(fileName, audioBuffer, {
-                        contentType: "audio/mpeg",
-                        upsert: true,
-                    });
-
-                if (uploadError) {
-                    throw new Error(`Supabase upload failed: ${uploadError.message}`);
-                }
-
-                const { data: publicUrlData } = supabase.storage
-                    .from(process.env.SUPABASE_BUCKET)
-                    .getPublicUrl(fileName);
-                const publicAudioUrl = publicUrlData.publicUrl;
-
-                const newSong = await Song.create({
-                    title: shortTitle,
-                    artist: video.author.name,
-                    thumbnail: video.thumbnail,
-                    videoId,
-                    audioUrl: publicAudioUrl,
+                const ytdlpProcess = ytdlp.exec(youtubeUrl, {
+                    proxy: currentProxyUrl || undefined,
+                    cookies: cookiesPath,
+                    format: "bestaudio",
+                    output: "-",
+                    verbose: true,
                 });
 
-                console.log("💾 Song saved to MongoDB!");
-                if (!res.headersSent) {
-                    res.status(201).json(newSong);
-                }
-            } catch (err) {
-                console.error("❌ Error processing stream or uploading:", err);
-                if (!res.headersSent) {
-                    res.status(500).json({ error: err.message });
+                const currentChunks = [];
+                let errorCaptured = null;
+
+                ytdlpProcess.stdout.on('data', (data) => {
+                    currentChunks.push(data);
+                });
+
+                ytdlpProcess.stderr.on('data', (data) => {
+                    const msg = data.toString();
+                    if (msg.includes("407 Proxy Authentication Required") || msg.includes("ProxyError")) {
+                        errorCaptured = "PROXY_AUTH_ERROR";
+                    }
+                    console.error(`📥 yt-dlp stderr: ${msg}`);
+                });
+
+                ytdlpProcess.on('error', (error) => {
+                    console.error("❌ Error executing yt-dlp process:", error);
+                    reject(error);
+                });
+
+                ytdlpProcess.stdout.on('end', async () => {
+                    if (errorCaptured === "PROXY_AUTH_ERROR") {
+                        console.warn("⚠️ Proxy authentication failed. Retrying with next proxy...");
+                        reject(new Error("PROXY_AUTH_ERROR"));
+                        return;
+                    }
+
+                    const audioBuffer = Buffer.concat(currentChunks);
+                    if (audioBuffer.length === 0) {
+                        console.warn("⚠️ Buffer is empty. Retrying with next proxy...");
+                        reject(new Error("EMPTY_BUFFER"));
+                        return;
+                    }
+
+                    resolve(audioBuffer);
+                });
+            });
+        };
+
+        const uploadAndSave = async (audioBuffer) => {
+            console.log(`☁️ Buffer created from stream (${(audioBuffer.length / 1024 / 1024).toFixed(2)} MB). Uploading to Supabase...`);
+            const fileName = `${videoId}.mp3`;
+            const { error: uploadError } = await supabase.storage
+                .from(process.env.SUPABASE_BUCKET)
+                .upload(fileName, audioBuffer, {
+                    contentType: "audio/mpeg",
+                    upsert: true,
+                });
+
+            if (uploadError) {
+                throw new Error(`Supabase upload failed: ${uploadError.message}`);
+            }
+
+            const { data: publicUrlData } = supabase.storage
+                .from(process.env.SUPABASE_BUCKET)
+                .getPublicUrl(fileName);
+            const publicAudioUrl = publicUrlData.publicUrl;
+
+            const newSong = await Song.create({
+                title: shortTitle,
+                artist: video.author.name,
+                thumbnail: video.thumbnail,
+                videoId,
+                audioUrl: publicAudioUrl,
+            });
+
+            console.log("✅ Song saved to MongoDB!");
+            if (!res.headersSent) {
+                res.status(201).json(newSong);
+            }
+        };
+
+        const processDownloadWithRetry = async () => {
+            let lastError = null;
+            let startIndex = Math.floor(Math.random() * webshareProxies.length);
+
+            for (let i = 0; i <= maxAttempts; i++) {
+                let currentIndex = (i === maxAttempts) ? -2 : (startIndex + i) % webshareProxies.length;
+                try {
+                    const buffer = await attemptDownload(currentIndex);
+                    await uploadAndSave(buffer);
+                    success = true;
+                    break;
+                } catch (err) {
+                    lastError = err;
+                    console.log(`❌ Attempt ${i + 1} failed: ${err.message}`);
+                    if (i === maxAttempts) {
+                        throw new Error(`All download attempts failed. Last error: ${err.message}`);
+                    }
                 }
             }
-        });
-        // --- END: Correct Stream Processing Logic ---
+        };
+
+        await processDownloadWithRetry();
+        // --- END: Refactored Stream Processing Logic with Retry ---
 
     } catch (err) {
         console.error("❌ Error in /upload route:", err);
