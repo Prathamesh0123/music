@@ -58,6 +58,7 @@ router.post("/upload", async (req, res) => {
         }
 
         // --- START: Refactored Stream Processing Logic with Retry ---
+        const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
         let success = false;
         const maxAttempts = Math.min(webshareProxies.length, 5); // Try up to 5 proxies
         let attempts = 0;
